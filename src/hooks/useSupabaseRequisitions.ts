@@ -131,6 +131,24 @@ function convertToSupabase(data: Omit<Requisition, 'id' | 'createdAt' | 'updated
   };
 }
 
+// Função auxiliar para extrair número do RC/PO e ordenar
+function sortByNumberDescending<T extends { rc?: string; numeroPo?: string }>(
+  items: T[],
+  field: 'rc' | 'numeroPo'
+): T[] {
+  return items.sort((a, b) => {
+    const valueA = field === 'rc' ? a.rc : a.numeroPo;
+    const valueB = field === 'rc' ? b.rc : b.numeroPo;
+
+    // Extrair apenas os dígitos
+    const numA = parseInt((valueA || '').replace(/\D/g, ''), 10) || 0;
+    const numB = parseInt((valueB || '').replace(/\D/g, ''), 10) || 0;
+
+    // Ordem decrescente: maiores primeiro
+    return numB - numA;
+  });
+}
+
 export function useSupabaseRequisitions() {
   const [requisitions, setRequisitions] = useState<Requisition[]>([]);
   const [filteredRequisitions, setFilteredRequisitions] = useState<Requisition[]>([]);
@@ -156,11 +174,7 @@ export function useSupabaseRequisitions() {
       const convertedData = data?.map(convertFromSupabase) || [];
 
       // Ordenar por RC (números maiores primeiro)
-      convertedData.sort((a, b) => {
-        const numA = parseInt(a.rc.replace(/\D/g, '')) || 0;
-        const numB = parseInt(b.rc.replace(/\D/g, '')) || 0;
-        return numB - numA; // Decrescente: maiores primeiro
-      });
+      sortByNumberDescending(convertedData, 'rc');
 
       setRequisitions(convertedData);
       setFilteredRequisitions(convertedData);
@@ -189,22 +203,12 @@ export function useSupabaseRequisitions() {
       // Adicionar e reordenar
       setRequisitions(prev => {
         const updated = [newRequisition, ...prev];
-        updated.sort((a, b) => {
-          const numA = parseInt(a.rc.replace(/\D/g, '')) || 0;
-          const numB = parseInt(b.rc.replace(/\D/g, '')) || 0;
-          return numB - numA;
-        });
-        return updated;
+        return sortByNumberDescending(updated, 'rc');
       });
 
       setFilteredRequisitions(prev => {
         const updated = [newRequisition, ...prev];
-        updated.sort((a, b) => {
-          const numA = parseInt(a.rc.replace(/\D/g, '')) || 0;
-          const numB = parseInt(b.rc.replace(/\D/g, '')) || 0;
-          return numB - numA;
-        });
-        return updated;
+        return sortByNumberDescending(updated, 'rc');
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao adicionar requisição');
@@ -288,22 +292,12 @@ export function useSupabaseRequisitions() {
 
       setRequisitions(prev => {
         const updated = prev.map(req => req.id === id ? updatedRequisition : req);
-        updated.sort((a, b) => {
-          const numA = parseInt(a.rc.replace(/\D/g, '')) || 0;
-          const numB = parseInt(b.rc.replace(/\D/g, '')) || 0;
-          return numB - numA;
-        });
-        return updated;
+        return sortByNumberDescending(updated, 'rc');
       });
 
       setFilteredRequisitions(prev => {
         const updated = prev.map(req => req.id === id ? updatedRequisition : req);
-        updated.sort((a, b) => {
-          const numA = parseInt(a.rc.replace(/\D/g, '')) || 0;
-          const numB = parseInt(b.rc.replace(/\D/g, '')) || 0;
-          return numB - numA;
-        });
-        return updated;
+        return sortByNumberDescending(updated, 'rc');
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao atualizar requisição');
@@ -441,11 +435,7 @@ export function useSupabaseRequisitions() {
     }
 
     // Manter ordenação por RC após filtrar
-    filtered.sort((a, b) => {
-      const numA = parseInt(a.rc.replace(/\D/g, '')) || 0;
-      const numB = parseInt(b.rc.replace(/\D/g, '')) || 0;
-      return numB - numA;
-    });
+    sortByNumberDescending(filtered, 'rc');
 
     setFilteredRequisitions(filtered);
   };

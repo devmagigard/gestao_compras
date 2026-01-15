@@ -3,6 +3,24 @@ import { supabase } from '../lib/supabase';
 import { PurchaseOrderItem, PurchaseOrderFilterState, PurchaseOrderMetrics } from '../types';
 import { createLocalDate } from '../utils/dateHelpers';
 
+// Função auxiliar para extrair número do RC/PO e ordenar
+function sortByNumberDescending<T extends { rc?: string; numeroPo?: string }>(
+  items: T[],
+  field: 'rc' | 'numeroPo'
+): T[] {
+  return items.sort((a, b) => {
+    const valueA = field === 'rc' ? a.rc : a.numeroPo;
+    const valueB = field === 'rc' ? b.rc : b.numeroPo;
+
+    // Extrair apenas os dígitos
+    const numA = parseInt((valueA || '').replace(/\D/g, ''), 10) || 0;
+    const numB = parseInt((valueB || '').replace(/\D/g, ''), 10) || 0;
+
+    // Ordem decrescente: maiores primeiro
+    return numB - numA;
+  });
+}
+
 function convertFromSupabase(data: any): PurchaseOrderItem {
   const formatDateField = (dateValue: any): string => {
     if (!dateValue) return '';
@@ -115,11 +133,7 @@ export function useSupabasePurchaseOrders() {
       const convertedData = data?.map(convertFromSupabase) || [];
 
       // Ordenar por número do PO (números maiores primeiro)
-      convertedData.sort((a, b) => {
-        const numA = parseInt(a.numeroPo.replace(/\D/g, '')) || 0;
-        const numB = parseInt(b.numeroPo.replace(/\D/g, '')) || 0;
-        return numB - numA; // Decrescente: maiores primeiro
-      });
+      sortByNumberDescending(convertedData, 'numeroPo');
 
       setItems(convertedData);
       setFilteredItems(convertedData);
@@ -147,22 +161,12 @@ export function useSupabasePurchaseOrders() {
       // Adicionar e reordenar
       setItems(prev => {
         const updated = [newItem, ...prev];
-        updated.sort((a, b) => {
-          const numA = parseInt(a.numeroPo.replace(/\D/g, '')) || 0;
-          const numB = parseInt(b.numeroPo.replace(/\D/g, '')) || 0;
-          return numB - numA;
-        });
-        return updated;
+        return sortByNumberDescending(updated, 'numeroPo');
       });
 
       setFilteredItems(prev => {
         const updated = [newItem, ...prev];
-        updated.sort((a, b) => {
-          const numA = parseInt(a.numeroPo.replace(/\D/g, '')) || 0;
-          const numB = parseInt(b.numeroPo.replace(/\D/g, '')) || 0;
-          return numB - numA;
-        });
-        return updated;
+        return sortByNumberDescending(updated, 'numeroPo');
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao adicionar item');
@@ -225,22 +229,12 @@ export function useSupabasePurchaseOrders() {
 
       setItems(prev => {
         const updated = prev.map(item => item.id === id ? updatedItem : item);
-        updated.sort((a, b) => {
-          const numA = parseInt(a.numeroPo.replace(/\D/g, '')) || 0;
-          const numB = parseInt(b.numeroPo.replace(/\D/g, '')) || 0;
-          return numB - numA;
-        });
-        return updated;
+        return sortByNumberDescending(updated, 'numeroPo');
       });
 
       setFilteredItems(prev => {
         const updated = prev.map(item => item.id === id ? updatedItem : item);
-        updated.sort((a, b) => {
-          const numA = parseInt(a.numeroPo.replace(/\D/g, '')) || 0;
-          const numB = parseInt(b.numeroPo.replace(/\D/g, '')) || 0;
-          return numB - numA;
-        });
-        return updated;
+        return sortByNumberDescending(updated, 'numeroPo');
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao atualizar item');
@@ -352,11 +346,7 @@ export function useSupabasePurchaseOrders() {
     }
 
     // Manter ordenação por número do PO após filtrar
-    filtered.sort((a, b) => {
-      const numA = parseInt(a.numeroPo.replace(/\D/g, '')) || 0;
-      const numB = parseInt(b.numeroPo.replace(/\D/g, '')) || 0;
-      return numB - numA;
-    });
+    sortByNumberDescending(filtered, 'numeroPo');
 
     setFilteredItems(filtered);
   };
