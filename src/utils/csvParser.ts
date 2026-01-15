@@ -112,12 +112,12 @@ function fixEncoding(text: string): string {
     fixedText = fixedText.replace(new RegExp(escapedWrong, 'gi'), correct);
   }
   
-  // Limpar múltiplos espaços e caracteres estranhos
+  // Limpar múltiplos espaços (mas preservar quebras de linha)
   fixedText = fixedText
-    .replace(/\s+/g, ' ') // Múltiplos espaços para um só
-    .replace(/[^\w\sÀ-ÿ.,;:()\-\/]/g, '') // Remove caracteres especiais inválidos
+    .replace(/[ \t]+/g, ' ') // Múltiplos espaços/tabs para um só
+    .replace(/[^\w\sÀ-ÿ.,;:()\-\/\r\n]/g, '') // Remove caracteres especiais inválidos mas mantém \r\n
     .trim();
-  
+
   return fixedText;
 }
 
@@ -126,8 +126,9 @@ export function parseCSVData(csvData: string): Requisition[] {
     // Primeiro, corrigir problemas de encoding no CSV inteiro
     const fixedCsvData = fixEncoding(csvData);
     console.log('CSV após correção de encoding:', fixedCsvData.substring(0, 300) + '...');
-    
-    const lines = fixedCsvData.split('\n').filter(line => line.trim() !== '');
+
+    // Dividir por diferentes tipos de quebras de linha (\r\n, \n, \r)
+    const lines = fixedCsvData.split(/\r?\n/).filter(line => line.trim() !== '');
     
     if (lines.length < 2) {
       throw new Error('Arquivo CSV deve conter pelo menos um cabeçalho e uma linha de dados');
