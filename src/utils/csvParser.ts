@@ -65,10 +65,12 @@ function fixEncoding(text: string): string {
   };
   
   let fixedText = text;
-  
+
   // Aplicar correções de encoding
   for (const [wrong, correct] of Object.entries(encodingFixes)) {
-    fixedText = fixedText.replace(new RegExp(wrong, 'gi'), correct);
+    // Escapar caracteres especiais de regex
+    const escapedWrong = wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    fixedText = fixedText.replace(new RegExp(escapedWrong, 'gi'), correct);
   }
   
   // Correções específicas para palavras comuns
@@ -105,7 +107,9 @@ function fixEncoding(text: string): string {
   
   // Aplicar correções de palavras
   for (const [wrong, correct] of Object.entries(wordFixes)) {
-    fixedText = fixedText.replace(new RegExp(wrong, 'gi'), correct);
+    // Escapar caracteres especiais de regex
+    const escapedWrong = wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    fixedText = fixedText.replace(new RegExp(escapedWrong, 'gi'), correct);
   }
   
   // Limpar múltiplos espaços e caracteres estranhos
