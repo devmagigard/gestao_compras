@@ -1,4 +1,4 @@
-import { RequisitionStatus, Criticality, QuotationType } from '../types';
+import { RequisitionStatus, Criticality, QuotationType, PurchaseOrderStatus, Currency } from '../types';
 
 export const REQUISITION_STATUSES: RequisitionStatus[] = [
   'Em cotação',
@@ -64,3 +64,43 @@ export const COMMON_CATEGORIES = [
   'Hospedagem',
   'Alimentação'
 ];
+
+// Purchase Order Item Statuses
+export const PURCHASE_ORDER_STATUSES: PurchaseOrderStatus[] = [
+  'Pedido',
+  'Em Trânsito',
+  'Parcialmente Entregue',
+  'Entregue',
+  'Cancelado',
+  'Aguardando Fornecedor'
+];
+
+// Currencies
+export const CURRENCIES: Currency[] = [
+  'BRL',
+  'USD',
+  'EUR',
+  'GBP',
+  'JPY',
+  'CNY'
+];
+
+// Purchase Order Status Colors
+export const PO_STATUS_COLORS = {
+  'Pedido': 'bg-blue-100 text-blue-800',
+  'Em Trânsito': 'bg-cyan-100 text-cyan-800',
+  'Parcialmente Entregue': 'bg-yellow-100 text-yellow-800',
+  'Entregue': 'bg-green-100 text-green-800',
+  'Cancelado': 'bg-red-100 text-red-800',
+  'Aguardando Fornecedor': 'bg-orange-100 text-orange-800'
+};
+
+// Currency Symbols
+export const CURRENCY_SYMBOLS: Record<Currency, string> = {
+  'BRL': 'R$',
+  'USD': '$',
+  'EUR': '€',
+  'GBP': '£',
+  'JPY': '¥',
+  'CNY': '¥'
+};

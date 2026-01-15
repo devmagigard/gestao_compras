@@ -7,11 +7,18 @@ import { RequisitionsTable } from './components/Requisitions/RequisitionsTable';
 import { RequisitionForm } from './components/Requisitions/RequisitionForm';
 import { RequisitionDetailModal } from './components/Requisitions/RequisitionDetailModal';
 import { FiltersModal } from './components/FiltersModal';
+import { PurchaseOrderItemsTable } from './components/PurchaseOrders/PurchaseOrderItemsTable';
+import { PurchaseOrderItemForm } from './components/PurchaseOrders/PurchaseOrderItemForm';
+import { PurchaseOrderItemDetailModal } from './components/PurchaseOrders/PurchaseOrderItemDetailModal';
+import { ProductMetricsCards } from './components/PurchaseOrders/ProductMetricsCards';
 import { useSupabaseRequisitions } from './hooks/useSupabaseRequisitions';
-import { FilterState, Requisition, RequisitionStatus } from './types';
+import { useSupabasePurchaseOrders } from './hooks/useSupabasePurchaseOrders';
+import { FilterState, Requisition, RequisitionStatus, PurchaseOrderItem, PurchaseOrderFilterState } from './types';
 import { REQUISITION_STATUSES } from './utils/constants';
 import { parseCSVData } from './utils/csvParser';
 import { exportToCSV, exportToExcel } from './utils/excelExporter';
+import { parseProductCSVData } from './utils/productCsvParser';
+import { exportProductsToCSV, exportProductsToExcel } from './utils/productExporter';
 
 // Hook para gerenciar tema dark/claro
 function useTheme() {
@@ -52,7 +59,23 @@ function App() {
     reloadRequisitions
   } = useSupabaseRequisitions();
 
-  const [currentView, setCurrentView] = useState<'dashboard' | 'requisitions'>('dashboard');
+  const {
+    items: purchaseOrderItems,
+    filteredItems: filteredPurchaseOrderItems,
+    upcomingDeliveries: upcomingProductDeliveries,
+    loading: loadingProducts,
+    error: errorProducts,
+    addItem: addPurchaseOrderItem,
+    updateItem: updatePurchaseOrderItem,
+    deleteItem: deletePurchaseOrderItem,
+    bulkImport: bulkImportProducts,
+    filterItems: filterPurchaseOrderItems,
+    getMetrics: getProductMetrics,
+    getUniqueValues: getProductUniqueValues,
+    reloadItems: reloadProducts
+  } = useSupabasePurchaseOrders();
+
+  const [currentView, setCurrentView] = useState<'dashboard' | 'requisitions' | 'products'>('dashboard');
   const [formOpen, setFormOpen] = useState(false);
   const [selectedRequisition, setSelectedRequisition] = useState<Requisition | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -66,7 +89,21 @@ function App() {
     attentionFilter: 'all'
   });
 
+  const [productFormOpen, setProductFormOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<PurchaseOrderItem | null>(null);
+  const [productDetailModalOpen, setProductDetailModalOpen] = useState(false);
+  const [selectedProductForDetail, setSelectedProductForDetail] = useState<PurchaseOrderItem | null>(null);
+  const [productFilters, setProductFilters] = useState<PurchaseOrderFilterState>({
+    poSearch: '',
+    itemCodeSearch: '',
+    itemDescriptionSearch: '',
+    statusSearch: '',
+    currencyFilter: 'all',
+    deliveryFilter: 'all'
+  });
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const productFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFiltersChange = (newFilters: FilterState) => {
     setFilters(newFilters);
@@ -172,8 +209,96 @@ function App() {
     exportToExcel(filteredRequisitions);
   };
 
+  const handleNewProduct = () => {
+    setSelectedProduct(null);
+    setProductFormOpen(true);
+  };
+
+  const handleEditProduct = (product: PurchaseOrderItem) => {
+    setSelectedProduct(product);
+    setProductFormOpen(true);
+  };
+
+  const handleViewProductDetails = (product: PurchaseOrderItem) => {
+    setSelectedProductForDetail(product);
+    setProductDetailModalOpen(true);
+  };
+
+  const handleSaveProduct = (productData: Omit<PurchaseOrderItem, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (selectedProduct) {
+      updatePurchaseOrderItem(selectedProduct.id, productData);
+    } else {
+      addPurchaseOrderItem(productData);
+    }
+  };
+
+  const handleDeleteProduct = (id: string) => {
+    if (confirm('Tem certeza que deseja excluir este produto?')) {
+      deletePurchaseOrderItem(id);
+    }
+  };
+
+  const handleImportProducts = () => {
+    productFileInputRef.current?.click();
+  };
+
+  const handleProductFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const csvData = e.target?.result as string;
+        const processImport = async () => {
+          try {
+            console.log('Iniciando importação de produtos...');
+            const parsedProducts = parseProductCSVData(csvData);
+            console.log('Produtos parseados:', parsedProducts);
+
+            await bulkImportProducts(parsedProducts);
+            alert(`✅ ${parsedProducts.length} produto(s) importado(s) com sucesso!`);
+          } catch (error) {
+            console.error('Erro na importação:', error);
+            alert(`❌ Erro ao importar arquivo CSV: ${error instanceof Error ? error.message : 'Verifique o formato do arquivo'}`);
+          }
+        };
+
+        processImport();
+      };
+      reader.readAsText(file);
+      if (productFileInputRef.current) {
+        productFileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleExportProductsCSV = () => {
+    const csvData = exportProductsToCSV(filteredPurchaseOrderItems);
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `produtos_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleExportProductsExcel = () => {
+    exportProductsToExcel(filteredPurchaseOrderItems);
+  };
+
+  const handleProductFiltersChange = (newFilters: PurchaseOrderFilterState) => {
+    setProductFilters(newFilters);
+    filterPurchaseOrderItems(newFilters);
+  };
+
   const metrics = getDashboardMetrics();
   const uniqueValues = getUniqueValues();
+  const productMetrics = getProductMetrics();
+  const productUniqueValues = getProductUniqueValues();
 
   // Mostrar loading enquanto carrega dados do Supabase
   if (loading) {
@@ -215,10 +340,10 @@ function App() {
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-200`}>
       <Header
-        onNewRequisition={handleNewRequisition}
-        onImport={handleImport}
-        onExportCSV={handleExportCSV}
-        onExportExcel={handleExportExcel}
+        onNewRequisition={currentView === 'products' ? handleNewProduct : handleNewRequisition}
+        onImport={currentView === 'products' ? handleImportProducts : handleImport}
+        onExportCSV={currentView === 'products' ? handleExportProductsCSV : handleExportCSV}
+        onExportExcel={currentView === 'products' ? handleExportProductsExcel : handleExportExcel}
         isDarkMode={isDarkMode}
         onToggleTheme={toggleTheme}
       />
@@ -248,6 +373,16 @@ function App() {
                   }`}
                 >
                   Requisições ({filteredRequisitions.length})
+                </button>
+                <button
+                  onClick={() => setCurrentView('products')}
+                  className={`text-sm font-medium border-b-2 pb-3 transition-all duration-200 ${
+                    currentView === 'products'
+                      ? 'text-blue-600 border-blue-600'
+                      : `${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} border-transparent hover:border-gray-300`
+                  }`}
+                >
+                  Produtos ({filteredPurchaseOrderItems.length})
                 </button>
               </nav>
 
@@ -328,7 +463,7 @@ function App() {
                   <MetricsCards metrics={metrics} isDarkMode={isDarkMode} />
                   <RecentActivity requisitions={filteredRequisitions} isDarkMode={isDarkMode} />
                 </div>
-              ) : (
+              ) : currentView === 'requisitions' ? (
                 <RequisitionsTable
                   requisitions={filteredRequisitions}
                   upcomingDeliveries={upcomingDeliveries}
@@ -338,6 +473,19 @@ function App() {
                   onUpdate={(id, field, value) => updateRequisition(id, { [field]: value })}
                   isDarkMode={isDarkMode}
                 />
+              ) : (
+                <div className="space-y-6">
+                  <ProductMetricsCards metrics={productMetrics} isDarkMode={isDarkMode} />
+                  <PurchaseOrderItemsTable
+                    items={filteredPurchaseOrderItems}
+                    upcomingDeliveries={upcomingProductDeliveries}
+                    onEdit={handleEditProduct}
+                    onViewDetails={handleViewProductDetails}
+                    onDelete={handleDeleteProduct}
+                    onUpdate={(id, field, value) => updatePurchaseOrderItem(id, { [field]: value })}
+                    isDarkMode={isDarkMode}
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -370,12 +518,35 @@ function App() {
         isDarkMode={isDarkMode}
       />
 
-      {/* Hidden file input */}
+      {/* Product Form Modal */}
+      <PurchaseOrderItemForm
+        isOpen={productFormOpen}
+        onClose={() => setProductFormOpen(false)}
+        onSave={handleSaveProduct}
+        item={selectedProduct}
+        uniqueValues={productUniqueValues}
+      />
+
+      {/* Product Detail Modal */}
+      <PurchaseOrderItemDetailModal
+        isOpen={productDetailModalOpen}
+        onClose={() => setProductDetailModalOpen(false)}
+        item={selectedProductForDetail}
+      />
+
+      {/* Hidden file inputs */}
       <input
         ref={fileInputRef}
         type="file"
         accept=".csv"
         onChange={handleFileChange}
+        style={{ display: 'none' }}
+      />
+      <input
+        ref={productFileInputRef}
+        type="file"
+        accept=".csv"
+        onChange={handleProductFileChange}
         style={{ display: 'none' }}
       />
     </div>

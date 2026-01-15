@@ -70,3 +70,54 @@ export interface DashboardMetrics {
   delayedDeliveries: number;
   upcomingDeliveries: number;
 }
+
+export interface PurchaseOrderItem {
+  id: string;
+  numeroPo: string;
+  ultimaAtualizacao: string;
+  dataPo: string;
+  codItem: string;
+  descricaoItem: string;
+  ncm: string;
+  garantia: string;
+  quantidade: number;
+  quantidadeEntregue: number;
+  valorUnitario: number;
+  moeda: Currency;
+  condicoesPagamento: string;
+  dataEntrega: string;
+  status: PurchaseOrderStatus;
+  observacoes: string;
+  requisitionId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type PurchaseOrderStatus =
+  | 'Pedido'
+  | 'Em Trânsito'
+  | 'Parcialmente Entregue'
+  | 'Entregue'
+  | 'Cancelado'
+  | 'Aguardando Fornecedor';
+
+export type Currency = 'BRL' | 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CNY';
+
+export interface PurchaseOrderFilterState {
+  poSearch: string;
+  itemCodeSearch: string;
+  itemDescriptionSearch: string;
+  statusSearch: string;
+  currencyFilter?: Currency | 'all';
+  deliveryFilter?: 'all' | 'delayed' | 'upcoming' | 'attention';
+}
+
+export interface PurchaseOrderMetrics {
+  totalItems: number;
+  pendingDelivery: number;
+  partiallyDelivered: number;
+  completed: number;
+  totalValue: number;
+  delayedDeliveries: number;
+  upcomingDeliveries: number;
+}

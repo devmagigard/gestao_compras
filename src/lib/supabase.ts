@@ -13,6 +13,71 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 export type Database = {
   public: {
     Tables: {
+      purchase_order_items: {
+        Row: {
+          id: string
+          numero_po: string
+          ultima_atualizacao: string
+          data_po: string | null
+          cod_item: string
+          descricao_item: string
+          ncm: string | null
+          garantia: string | null
+          quantidade: number
+          quantidade_entregue: number
+          valor_unitario: number
+          moeda: string
+          condicoes_pagamento: string | null
+          data_entrega: string | null
+          status: string
+          observacoes: string | null
+          requisition_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          numero_po: string
+          ultima_atualizacao?: string
+          data_po?: string | null
+          cod_item: string
+          descricao_item: string
+          ncm?: string | null
+          garantia?: string | null
+          quantidade?: number
+          quantidade_entregue?: number
+          valor_unitario?: number
+          moeda?: string
+          condicoes_pagamento?: string | null
+          data_entrega?: string | null
+          status?: string
+          observacoes?: string | null
+          requisition_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          numero_po?: string
+          ultima_atualizacao?: string
+          data_po?: string | null
+          cod_item?: string
+          descricao_item?: string
+          ncm?: string | null
+          garantia?: string | null
+          quantidade?: number
+          quantidade_entregue?: number
+          valor_unitario?: number
+          moeda?: string
+          condicoes_pagamento?: string | null
+          data_entrega?: string | null
+          status?: string
+          observacoes?: string | null
+          requisition_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       requisitions: {
         Row: {
           id: string
