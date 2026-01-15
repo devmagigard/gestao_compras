@@ -19,6 +19,7 @@ import { parseCSVData } from './utils/csvParser';
 import { exportToCSV, exportToExcel } from './utils/excelExporter';
 import { parseProductCSVData } from './utils/productCsvParser';
 import { exportProductsToCSV, exportProductsToExcel } from './utils/productExporter';
+import { migrateLocalStorageToSupabase, checkIfMigrationNeeded } from './utils/migrateLocalStorageToSupabase';
 
 // Hook para gerenciar tema dark/claro
 function useTheme() {
@@ -104,6 +105,22 @@ function App() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const productFileInputRef = useRef<HTMLInputElement>(null);
+
+  const [showMigrationModal, setShowMigrationModal] = useState(false);
+  const [migrationStatus, setMigrationStatus] = useState<{
+    inProgress: boolean;
+    message: string;
+    type: 'info' | 'success' | 'error';
+  }>({ inProgress: false, message: '', type: 'info' });
+
+  // Verificar se há dados no localStorage que precisam ser migrados
+  useEffect(() => {
+    const migrationCheck = checkIfMigrationNeeded();
+    if (migrationCheck.needed && !loading) {
+      console.log('🔔 Dados encontrados no localStorage:', migrationCheck);
+      setShowMigrationModal(true);
+    }
+  }, [loading]);
 
   const handleFiltersChange = (newFilters: FilterState) => {
     setFilters(newFilters);
@@ -293,6 +310,43 @@ function App() {
   const handleProductFiltersChange = (newFilters: PurchaseOrderFilterState) => {
     setProductFilters(newFilters);
     filterPurchaseOrderItems(newFilters);
+  };
+
+  const handleMigration = async () => {
+    setMigrationStatus({ inProgress: true, message: 'Migrando dados...', type: 'info' });
+
+    try {
+      const result = await migrateLocalStorageToSupabase();
+
+      if (result.success) {
+        setMigrationStatus({
+          inProgress: false,
+          message: result.message,
+          type: 'success'
+        });
+
+        // Recarregar dados do Supabase
+        await reloadRequisitions();
+        await reloadProducts();
+
+        // Fechar modal após 2 segundos
+        setTimeout(() => {
+          setShowMigrationModal(false);
+        }, 2000);
+      } else {
+        setMigrationStatus({
+          inProgress: false,
+          message: result.message,
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      setMigrationStatus({
+        inProgress: false,
+        message: 'Erro ao migrar dados. Tente novamente.',
+        type: 'error'
+      });
+    }
   };
 
   const metrics = getDashboardMetrics();
@@ -549,6 +603,98 @@ function App() {
         onChange={handleProductFileChange}
         style={{ display: 'none' }}
       />
+
+      {/* Migration Modal */}
+      {showMigrationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl max-w-md w-full p-6 transition-colors duration-200`}>
+            <h2 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              Migração de Dados Necessária
+            </h2>
+
+            {migrationStatus.inProgress ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {migrationStatus.message}
+                </p>
+              </div>
+            ) : migrationStatus.type === 'success' ? (
+              <div className="text-center py-4">
+                <div className="text-green-500 text-5xl mb-4">✓</div>
+                <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {migrationStatus.message}
+                </p>
+              </div>
+            ) : migrationStatus.type === 'error' ? (
+              <div>
+                <div className={`${isDarkMode ? 'bg-red-900/20 border-red-600 text-red-400' : 'bg-red-100 border-red-400 text-red-700'} px-4 py-3 rounded mb-4 border transition-colors duration-200`}>
+                  <p>{migrationStatus.message}</p>
+                </div>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => setShowMigrationModal(false)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                      isDarkMode
+                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                    }`}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleMigration}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200"
+                  >
+                    Tentar Novamente
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-4`}>
+                  Detectamos que você tem dados armazenados localmente no seu navegador.
+                  Deseja migrar esses dados para o banco de dados Supabase?
+                </p>
+                <div className={`${isDarkMode ? 'bg-blue-900/20 border-blue-600 text-blue-400' : 'bg-blue-100 border-blue-400 text-blue-700'} px-4 py-3 rounded mb-4 border transition-colors duration-200`}>
+                  <p className="text-sm">
+                    <strong>Dados encontrados:</strong>
+                    <br />
+                    {(() => {
+                      const check = checkIfMigrationNeeded();
+                      return (
+                        <>
+                          {check.requisitionsCount} requisições
+                          <br />
+                          {check.purchaseOrdersCount} itens de pedido
+                        </>
+                      );
+                    })()}
+                  </p>
+                </div>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => setShowMigrationModal(false)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                      isDarkMode
+                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                    }`}
+                  >
+                    Agora Não
+                  </button>
+                  <button
+                    onClick={handleMigration}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200"
+                  >
+                    Migrar Dados
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
