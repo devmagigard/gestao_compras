@@ -7,6 +7,7 @@ import { RequisitionsTable } from './components/Requisitions/RequisitionsTable';
 import { RequisitionForm } from './components/Requisitions/RequisitionForm';
 import { RequisitionDetailModal } from './components/Requisitions/RequisitionDetailModal';
 import { FiltersModal } from './components/FiltersModal';
+import { BulkImportModal } from './components/BulkImportModal';
 import { PurchaseOrderItemsTable } from './components/PurchaseOrders/PurchaseOrderItemsTable';
 import { PurchaseOrderItemForm } from './components/PurchaseOrders/PurchaseOrderItemForm';
 import { PurchaseOrderItemDetailModal } from './components/PurchaseOrders/PurchaseOrderItemDetailModal';
@@ -113,6 +114,8 @@ function App() {
     type: 'info' | 'success' | 'error';
   }>({ inProgress: false, message: '', type: 'info' });
 
+  const [bulkImportModalOpen, setBulkImportModalOpen] = useState(false);
+
   // Verificar se há dados no localStorage que precisam ser migrados
   useEffect(() => {
     const migrationCheck = checkIfMigrationNeeded();
@@ -157,7 +160,11 @@ function App() {
   };
 
   const handleImport = () => {
-    fileInputRef.current?.click();
+    setBulkImportModalOpen(true);
+  };
+
+  const handleBulkImportComplete = () => {
+    reloadRequisitions();
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -586,6 +593,13 @@ function App() {
         isOpen={productDetailModalOpen}
         onClose={() => setProductDetailModalOpen(false)}
         item={selectedProductForDetail}
+      />
+
+      {/* Bulk Import Modal */}
+      <BulkImportModal
+        isOpen={bulkImportModalOpen}
+        onClose={() => setBulkImportModalOpen(false)}
+        onImportComplete={handleBulkImportComplete}
       />
 
       {/* Hidden file inputs */}
