@@ -149,12 +149,19 @@ export function useSupabaseRequisitions() {
       setLoading(true);
       const { data, error } = await supabase
         .from('requisitions')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
 
       if (error) throw error;
 
       const convertedData = data?.map(convertFromSupabase) || [];
+
+      // Ordenar por RC (números maiores primeiro)
+      convertedData.sort((a, b) => {
+        const numA = parseInt(a.rc.replace(/\D/g, '')) || 0;
+        const numB = parseInt(b.rc.replace(/\D/g, '')) || 0;
+        return numB - numA; // Decrescente: maiores primeiro
+      });
+
       setRequisitions(convertedData);
       setFilteredRequisitions(convertedData);
     } catch (err) {
@@ -178,8 +185,27 @@ export function useSupabaseRequisitions() {
       if (error) throw error;
 
       const newRequisition = convertFromSupabase(data);
-      setRequisitions(prev => [newRequisition, ...prev]);
-      setFilteredRequisitions(prev => [newRequisition, ...prev]);
+
+      // Adicionar e reordenar
+      setRequisitions(prev => {
+        const updated = [newRequisition, ...prev];
+        updated.sort((a, b) => {
+          const numA = parseInt(a.rc.replace(/\D/g, '')) || 0;
+          const numB = parseInt(b.rc.replace(/\D/g, '')) || 0;
+          return numB - numA;
+        });
+        return updated;
+      });
+
+      setFilteredRequisitions(prev => {
+        const updated = [newRequisition, ...prev];
+        updated.sort((a, b) => {
+          const numA = parseInt(a.rc.replace(/\D/g, '')) || 0;
+          const numB = parseInt(b.rc.replace(/\D/g, '')) || 0;
+          return numB - numA;
+        });
+        return updated;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao adicionar requisição');
       console.error('Erro ao adicionar requisição:', err);
@@ -259,13 +285,26 @@ export function useSupabaseRequisitions() {
       if (error) throw error;
 
       const updatedRequisition = convertFromSupabase(data);
-      
-      setRequisitions(prev => 
-        prev.map(req => req.id === id ? updatedRequisition : req)
-      );
-      setFilteredRequisitions(prev => 
-        prev.map(req => req.id === id ? updatedRequisition : req)
-      );
+
+      setRequisitions(prev => {
+        const updated = prev.map(req => req.id === id ? updatedRequisition : req);
+        updated.sort((a, b) => {
+          const numA = parseInt(a.rc.replace(/\D/g, '')) || 0;
+          const numB = parseInt(b.rc.replace(/\D/g, '')) || 0;
+          return numB - numA;
+        });
+        return updated;
+      });
+
+      setFilteredRequisitions(prev => {
+        const updated = prev.map(req => req.id === id ? updatedRequisition : req);
+        updated.sort((a, b) => {
+          const numA = parseInt(a.rc.replace(/\D/g, '')) || 0;
+          const numB = parseInt(b.rc.replace(/\D/g, '')) || 0;
+          return numB - numA;
+        });
+        return updated;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao atualizar requisição');
       console.error('Erro ao atualizar requisição:', err);
@@ -400,6 +439,14 @@ export function useSupabaseRequisitions() {
         }
       });
     }
+
+    // Manter ordenação por RC após filtrar
+    filtered.sort((a, b) => {
+      const numA = parseInt(a.rc.replace(/\D/g, '')) || 0;
+      const numB = parseInt(b.rc.replace(/\D/g, '')) || 0;
+      return numB - numA;
+    });
+
     setFilteredRequisitions(filtered);
   };
 

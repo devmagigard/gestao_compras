@@ -108,12 +108,19 @@ export function useSupabasePurchaseOrders() {
       setLoading(true);
       const { data, error } = await supabase
         .from('purchase_order_items')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
 
       if (error) throw error;
 
       const convertedData = data?.map(convertFromSupabase) || [];
+
+      // Ordenar por número do PO (números maiores primeiro)
+      convertedData.sort((a, b) => {
+        const numA = parseInt(a.numeroPo.replace(/\D/g, '')) || 0;
+        const numB = parseInt(b.numeroPo.replace(/\D/g, '')) || 0;
+        return numB - numA; // Decrescente: maiores primeiro
+      });
+
       setItems(convertedData);
       setFilteredItems(convertedData);
     } catch (err) {
@@ -136,8 +143,27 @@ export function useSupabasePurchaseOrders() {
       if (error) throw error;
 
       const newItem = convertFromSupabase(data);
-      setItems(prev => [newItem, ...prev]);
-      setFilteredItems(prev => [newItem, ...prev]);
+
+      // Adicionar e reordenar
+      setItems(prev => {
+        const updated = [newItem, ...prev];
+        updated.sort((a, b) => {
+          const numA = parseInt(a.numeroPo.replace(/\D/g, '')) || 0;
+          const numB = parseInt(b.numeroPo.replace(/\D/g, '')) || 0;
+          return numB - numA;
+        });
+        return updated;
+      });
+
+      setFilteredItems(prev => {
+        const updated = [newItem, ...prev];
+        updated.sort((a, b) => {
+          const numA = parseInt(a.numeroPo.replace(/\D/g, '')) || 0;
+          const numB = parseInt(b.numeroPo.replace(/\D/g, '')) || 0;
+          return numB - numA;
+        });
+        return updated;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao adicionar item');
       console.error('Erro ao adicionar item:', err);
@@ -197,12 +223,25 @@ export function useSupabasePurchaseOrders() {
 
       const updatedItem = convertFromSupabase(data);
 
-      setItems(prev =>
-        prev.map(item => item.id === id ? updatedItem : item)
-      );
-      setFilteredItems(prev =>
-        prev.map(item => item.id === id ? updatedItem : item)
-      );
+      setItems(prev => {
+        const updated = prev.map(item => item.id === id ? updatedItem : item);
+        updated.sort((a, b) => {
+          const numA = parseInt(a.numeroPo.replace(/\D/g, '')) || 0;
+          const numB = parseInt(b.numeroPo.replace(/\D/g, '')) || 0;
+          return numB - numA;
+        });
+        return updated;
+      });
+
+      setFilteredItems(prev => {
+        const updated = prev.map(item => item.id === id ? updatedItem : item);
+        updated.sort((a, b) => {
+          const numA = parseInt(a.numeroPo.replace(/\D/g, '')) || 0;
+          const numB = parseInt(b.numeroPo.replace(/\D/g, '')) || 0;
+          return numB - numA;
+        });
+        return updated;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao atualizar item');
       console.error('Erro ao atualizar item:', err);
@@ -311,6 +350,13 @@ export function useSupabasePurchaseOrders() {
         }
       });
     }
+
+    // Manter ordenação por número do PO após filtrar
+    filtered.sort((a, b) => {
+      const numA = parseInt(a.numeroPo.replace(/\D/g, '')) || 0;
+      const numB = parseInt(b.numeroPo.replace(/\D/g, '')) || 0;
+      return numB - numA;
+    });
 
     setFilteredItems(filtered);
   };
