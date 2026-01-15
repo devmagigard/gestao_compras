@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Upload, X, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 import { parseCSVData } from '../utils/csvParser';
 import { importRequisitionsToSupabase, ImportResult } from '../utils/importCsvToSupabase';
+import * as XLSX from 'xlsx';
 
 interface BulkImportModalProps {
   isOpen: boolean;
@@ -49,11 +50,30 @@ export function BulkImportModal({ isOpen, onClose, onImportComplete }: BulkImpor
       setResult(null);
       setProgress({ processed: 0, total: 0, successful: 0, failed: 0 });
 
-      const text = await file.text();
-      console.log('Arquivo lido, processando CSV...');
+      let csvText: string;
+      const fileExtension = file.name.toLowerCase().split('.').pop();
 
-      const requisitions = parseCSVData(text);
-      console.log(`${requisitions.length} requisições parseadas do CSV`);
+      // Processar arquivos Excel
+      if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+        console.log('Processando arquivo Excel...');
+        const arrayBuffer = await file.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+
+        // Pegar a primeira planilha
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+
+        // Converter para CSV
+        csvText = XLSX.utils.sheet_to_csv(worksheet, { FS: ';' });
+        console.log('Excel convertido para CSV');
+      } else {
+        // Processar arquivo CSV
+        console.log('Processando arquivo CSV...');
+        csvText = await file.text();
+      }
+
+      const requisitions = parseCSVData(csvText);
+      console.log(`${requisitions.length} requisições parseadas`);
 
       setProgress({ processed: 0, total: requisitions.length, successful: 0, failed: 0 });
 
@@ -132,15 +152,15 @@ export function BulkImportModal({ isOpen, onClose, onImportComplete }: BulkImpor
               >
                 <Upload className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                 <p className="text-lg font-medium text-gray-700 mb-2">
-                  Arraste o arquivo CSV aqui
+                  Arraste o arquivo aqui
                 </p>
                 <p className="text-sm text-gray-500 mb-4">
-                  ou clique para selecionar
+                  CSV ou Excel (.xlsx, .xls)
                 </p>
                 <label className="inline-block">
                   <input
                     type="file"
-                    accept=".csv"
+                    accept=".csv,.xlsx,.xls"
                     onChange={handleFileInput}
                     className="hidden"
                   />
@@ -153,7 +173,7 @@ export function BulkImportModal({ isOpen, onClose, onImportComplete }: BulkImpor
               <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h3 className="font-medium text-blue-900 mb-2">Formato esperado:</h3>
                 <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Arquivo CSV separado por ponto e vírgula (;)</li>
+                  <li>• Arquivo CSV (separado por ponto e vírgula) ou Excel (.xlsx, .xls)</li>
                   <li>• Primeira linha com cabeçalhos</li>
                   <li>• Colunas: RC, PROJETO, CATEGORIA, ITEM, FRETE, FORNECEDOR, etc.</li>
                   <li>• Datas no formato DD/MM/YYYY ou YYYY-MM-DD</li>
