@@ -28,13 +28,19 @@ export function RequisitionsTable({
 }: RequisitionsTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
-  const [sortField, setSortField] = useState<keyof Requisition>('createdAt');
+  const [sortField, setSortField] = useState<keyof Requisition>('rc');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const sortedRequisitions = [...requisitions].sort((a, b) => {
     const aValue = a[sortField];
     const bValue = b[sortField];
-    
+
+    if (sortField === 'rc') {
+      const numA = parseInt((String(aValue) || '').replace(/\D/g, ''), 10) || 0;
+      const numB = parseInt((String(bValue) || '').replace(/\D/g, ''), 10) || 0;
+      return sortDirection === 'asc' ? numA - numB : numB - numA;
+    }
+
     if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
     return 0;
