@@ -21,6 +21,7 @@ import { exportToCSV, exportToExcel } from './utils/excelExporter';
 import { parseProductCSVData } from './utils/productCsvParser';
 import { exportProductsToCSV, exportProductsToExcel } from './utils/productExporter';
 import { migrateLocalStorageToSupabase, checkIfMigrationNeeded } from './utils/migrateLocalStorageToSupabase';
+import { supabase } from './lib/supabase';
 
 // Hook para gerenciar tema dark/claro
 function useTheme() {
@@ -356,6 +357,32 @@ function App() {
     }
   };
 
+  const handleClearAllData = async () => {
+    // Deletar todas as requisições
+    const { error: requisitionsError } = await supabase
+      .from('requisitions')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    if (requisitionsError) {
+      throw new Error(`Erro ao deletar requisições: ${requisitionsError.message}`);
+    }
+
+    // Deletar todos os itens de pedido
+    const { error: itemsError } = await supabase
+      .from('purchase_order_items')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    if (itemsError) {
+      throw new Error(`Erro ao deletar itens de pedido: ${itemsError.message}`);
+    }
+
+    // Recarregar dados
+    await reloadRequisitions();
+    await reloadProducts();
+  };
+
   const metrics = getDashboardMetrics();
   const uniqueValues = getUniqueValues();
   const productMetrics = getProductMetrics();
@@ -407,6 +434,7 @@ function App() {
         onExportExcel={currentView === 'products' ? handleExportProductsExcel : handleExportExcel}
         isDarkMode={isDarkMode}
         onToggleTheme={toggleTheme}
+        onClearAllData={handleClearAllData}
       />
 
       <main className="w-full">
