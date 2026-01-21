@@ -28,18 +28,12 @@ export function PurchaseOrderItemsTable({
 }: PurchaseOrderItemsTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
-  const [sortField, setSortField] = useState<keyof PurchaseOrderItem>('numeroPo');
+  const [sortField, setSortField] = useState<keyof PurchaseOrderItem>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const sortedItems = [...items].sort((a, b) => {
     const aValue = a[sortField];
     const bValue = b[sortField];
-
-    if (sortField === 'numeroPo') {
-      const numA = parseInt((String(aValue) || '').replace(/\D/g, ''), 10) || 0;
-      const numB = parseInt((String(bValue) || '').replace(/\D/g, ''), 10) || 0;
-      return sortDirection === 'asc' ? numA - numB : numB - numA;
-    }
 
     if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
