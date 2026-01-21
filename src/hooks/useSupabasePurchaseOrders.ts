@@ -8,7 +8,7 @@ function sortByNumberDescending<T extends { rc?: string; numeroPo?: string }>(
   items: T[],
   field: 'rc' | 'numeroPo'
 ): T[] {
-  return items.sort((a, b) => {
+  return [...items].sort((a, b) => {
     const valueA = field === 'rc' ? a.rc : a.numeroPo;
     const valueB = field === 'rc' ? b.rc : b.numeroPo;
 
@@ -16,7 +16,7 @@ function sortByNumberDescending<T extends { rc?: string; numeroPo?: string }>(
     const numA = parseInt((valueA || '').replace(/\D/g, ''), 10) || 0;
     const numB = parseInt((valueB || '').replace(/\D/g, ''), 10) || 0;
 
-    // Ordem decrescente: maiores primeiro
+    // Ordem decrescente: maiores primeiro (1900 antes de 673)
     return numB - numA;
   });
 }
@@ -126,17 +126,18 @@ export function useSupabasePurchaseOrders() {
       setLoading(true);
       const { data, error } = await supabase
         .from('purchase_order_items')
-        .select('*');
+        .select('*')
+        .order('numero_po', { ascending: false });
 
       if (error) throw error;
 
       const convertedData = data?.map(convertFromSupabase) || [];
 
-      // Ordenar por número do PO (números maiores primeiro)
-      sortByNumberDescending(convertedData, 'numeroPo');
+      // Ordenar por número do PO numérico (números maiores primeiro)
+      const sorted = sortByNumberDescending(convertedData, 'numeroPo');
 
-      setItems(convertedData);
-      setFilteredItems(convertedData);
+      setItems(sorted);
+      setFilteredItems(sorted);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar itens');
       console.error('Erro ao carregar itens:', err);

@@ -136,7 +136,7 @@ function sortByNumberDescending<T extends { rc?: string; numeroPo?: string }>(
   items: T[],
   field: 'rc' | 'numeroPo'
 ): T[] {
-  return items.sort((a, b) => {
+  return [...items].sort((a, b) => {
     const valueA = field === 'rc' ? a.rc : a.numeroPo;
     const valueB = field === 'rc' ? b.rc : b.numeroPo;
 
@@ -144,7 +144,7 @@ function sortByNumberDescending<T extends { rc?: string; numeroPo?: string }>(
     const numA = parseInt((valueA || '').replace(/\D/g, ''), 10) || 0;
     const numB = parseInt((valueB || '').replace(/\D/g, ''), 10) || 0;
 
-    // Ordem decrescente: maiores primeiro
+    // Ordem decrescente: maiores primeiro (1900 antes de 673)
     return numB - numA;
   });
 }
@@ -167,17 +167,18 @@ export function useSupabaseRequisitions() {
       setLoading(true);
       const { data, error } = await supabase
         .from('requisitions')
-        .select('*');
+        .select('*')
+        .order('rc', { ascending: false });
 
       if (error) throw error;
 
       const convertedData = data?.map(convertFromSupabase) || [];
 
-      // Ordenar por RC (números maiores primeiro)
-      sortByNumberDescending(convertedData, 'rc');
+      // Ordenar por RC numérico (números maiores primeiro)
+      const sorted = sortByNumberDescending(convertedData, 'rc');
 
-      setRequisitions(convertedData);
-      setFilteredRequisitions(convertedData);
+      setRequisitions(sorted);
+      setFilteredRequisitions(sorted);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar requisições');
       console.error('Erro ao carregar requisições:', err);
