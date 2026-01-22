@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Requisition } from '../../types';
-import { Edit, Trash2, Package, User, Calendar, DollarSign, Eye, AlertCircle, CalendarClock } from 'lucide-react';
+import { Edit, Trash2, Package, User, Calendar, DollarSign, Eye, AlertCircle, CalendarClock, ShoppingCart } from 'lucide-react';
 import { STATUS_COLORS, CRITICALITY_COLORS, REQUISITION_STATUSES, CRITICALITY_LEVELS } from '../../utils/constants';
 import { EditableCell } from './EditableCell';
 import { Tooltip } from '../UI/Tooltip';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { createLocalDate } from '../../utils/dateHelpers';
+import { supabase } from '../../lib/supabase';
 
 interface RequisitionsTableProps {
   requisitions: Requisition[];
@@ -14,27 +15,59 @@ interface RequisitionsTableProps {
   onViewDetails: (requisition: Requisition) => void;
   onDelete: (id: string) => void;
   onUpdate: (id: string, field: keyof Requisition, value: any) => void;
+  onViewProducts?: (requisition: Requisition) => void;
   isDarkMode?: boolean;
 }
 
-export function RequisitionsTable({ 
-  requisitions, 
-  upcomingDeliveries, 
-  onEdit, 
-  onViewDetails, 
-  onDelete, 
+export function RequisitionsTable({
+  requisitions,
+  upcomingDeliveries,
+  onEdit,
+  onViewDetails,
+  onDelete,
   onUpdate,
-  isDarkMode = false 
+  onViewProducts,
+  isDarkMode = false
 }: RequisitionsTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
   const [sortField, setSortField] = useState<keyof Requisition>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [productCounts, setProductCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    loadProductCounts();
+  }, [requisitions]);
+
+  const loadProductCounts = async () => {
+    try {
+      const requisitionIds = requisitions.map(r => r.id);
+      if (requisitionIds.length === 0) return;
+
+      const { data, error } = await supabase
+        .from('purchase_order_items')
+        .select('requisition_id')
+        .in('requisition_id', requisitionIds);
+
+      if (error) throw error;
+
+      const counts: Record<string, number> = {};
+      data?.forEach((item: any) => {
+        if (item.requisition_id) {
+          counts[item.requisition_id] = (counts[item.requisition_id] || 0) + 1;
+        }
+      });
+
+      setProductCounts(counts);
+    } catch (err) {
+      console.error('Erro ao carregar contagem de produtos:', err);
+    }
+  };
 
   const sortedRequisitions = [...requisitions].sort((a, b) => {
     const aValue = a[sortField];
     const bValue = b[sortField];
-    
+
     if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
     return 0;
@@ -238,6 +271,11 @@ export function RequisitionsTable({
                 isDarkMode ? 'text-gray-400' : 'text-gray-600'
               }`}>
                 Transportadora
+              </th>
+              <th className={`px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                Produtos
               </th>
               <th className={`px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider ${
                 isDarkMode ? 'text-gray-400' : 'text-gray-600'
@@ -487,6 +525,24 @@ export function RequisitionsTable({
                       isDarkMode ? 'text-white' : 'text-gray-900'
                     }`}
                   />
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-center align-middle">
+                  <button
+                    onClick={() => onViewProducts && onViewProducts(requisition)}
+                    className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      productCounts[requisition.id] > 0
+                        ? isDarkMode
+                          ? 'bg-blue-900/30 text-blue-400 hover:bg-blue-900/50 border border-blue-700'
+                          : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'
+                        : isDarkMode
+                        ? 'bg-gray-700 text-gray-400 hover:bg-gray-600 border border-gray-600'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300'
+                    }`}
+                    title="Ver produtos desta requisição"
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-1.5" />
+                    <span className="font-bold">{productCounts[requisition.id] || 0}</span>
+                  </button>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium align-middle">
                   <div className="flex items-center justify-end space-x-1">

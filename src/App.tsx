@@ -6,6 +6,7 @@ import { RecentActivity } from './components/Dashboard/RecentActivity';
 import { RequisitionsTable } from './components/Requisitions/RequisitionsTable';
 import { RequisitionForm } from './components/Requisitions/RequisitionForm';
 import { RequisitionDetailModal } from './components/Requisitions/RequisitionDetailModal';
+import { RequisitionProductsModal } from './components/Requisitions/RequisitionProductsModal';
 import { FiltersModal } from './components/FiltersModal';
 import { BulkImportModal } from './components/BulkImportModal';
 import { PurchaseOrderItemsTable } from './components/PurchaseOrders/PurchaseOrderItemsTable';
@@ -84,6 +85,8 @@ function App() {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [filtersModalOpen, setFiltersModalOpen] = useState(false);
   const [selectedRequisitionForDetail, setSelectedRequisitionForDetail] = useState<Requisition | null>(null);
+  const [productsModalOpen, setProductsModalOpen] = useState(false);
+  const [selectedRequisitionForProducts, setSelectedRequisitionForProducts] = useState<Requisition | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     rcSearch: '',
     projectSearch: '',
@@ -144,6 +147,11 @@ function App() {
   const handleViewDetails = (requisition: Requisition) => {
     setSelectedRequisitionForDetail(requisition);
     setDetailModalOpen(true);
+  };
+
+  const handleViewProducts = (requisition: Requisition) => {
+    setSelectedRequisitionForProducts(requisition);
+    setProductsModalOpen(true);
   };
 
   const handleSaveRequisition = (requisitionData: Omit<Requisition, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -558,6 +566,7 @@ function App() {
                   upcomingDeliveries={upcomingDeliveries}
                   onEdit={handleEditRequisition}
                   onViewDetails={handleViewDetails}
+                  onViewProducts={handleViewProducts}
                   onDelete={handleDeleteRequisition}
                   onUpdate={(id, field, value) => updateRequisition(id, { [field]: value })}
                   isDarkMode={isDarkMode}
@@ -595,6 +604,14 @@ function App() {
         isOpen={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         requisition={selectedRequisitionForDetail}
+      />
+
+      {/* Products Modal */}
+      <RequisitionProductsModal
+        isOpen={productsModalOpen}
+        onClose={() => setProductsModalOpen(false)}
+        requisition={selectedRequisitionForProducts}
+        isDarkMode={isDarkMode}
       />
 
       {/* Filters Modal */}
