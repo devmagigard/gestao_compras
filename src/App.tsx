@@ -13,6 +13,7 @@ import { PurchaseOrderItemsTable } from './components/PurchaseOrders/PurchaseOrd
 import { PurchaseOrderItemForm } from './components/PurchaseOrders/PurchaseOrderItemForm';
 import { PurchaseOrderItemDetailModal } from './components/PurchaseOrders/PurchaseOrderItemDetailModal';
 import { ProductMetricsCards } from './components/PurchaseOrders/ProductMetricsCards';
+import { BulkImportProductsModal } from './components/PurchaseOrders/BulkImportProductsModal';
 import { useSupabaseRequisitions } from './hooks/useSupabaseRequisitions';
 import { useSupabasePurchaseOrders } from './hooks/useSupabasePurchaseOrders';
 import { FilterState, Requisition, RequisitionStatus, PurchaseOrderItem, PurchaseOrderFilterState } from './types';
@@ -119,6 +120,7 @@ function App() {
   }>({ inProgress: false, message: '', type: 'info' });
 
   const [bulkImportModalOpen, setBulkImportModalOpen] = useState(false);
+  const [bulkImportProductsModalOpen, setBulkImportProductsModalOpen] = useState(false);
 
   // Verificar se há dados no localStorage que precisam ser migrados
   useEffect(() => {
@@ -272,7 +274,11 @@ function App() {
   };
 
   const handleImportProducts = () => {
-    productFileInputRef.current?.click();
+    setBulkImportProductsModalOpen(true);
+  };
+
+  const handleBulkImportProductsComplete = () => {
+    reloadProducts();
   };
 
   const handleProductFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -645,6 +651,13 @@ function App() {
         isOpen={bulkImportModalOpen}
         onClose={() => setBulkImportModalOpen(false)}
         onImportComplete={handleBulkImportComplete}
+      />
+
+      {/* Bulk Import Products Modal */}
+      <BulkImportProductsModal
+        isOpen={bulkImportProductsModalOpen}
+        onClose={() => setBulkImportProductsModalOpen(false)}
+        onImportComplete={handleBulkImportProductsComplete}
       />
 
       {/* Hidden file inputs */}

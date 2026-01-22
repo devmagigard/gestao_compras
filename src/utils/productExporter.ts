@@ -113,3 +113,83 @@ export function exportProductsToExcel(items: PurchaseOrderItem[]): void {
 
   XLSX.writeFile(workbook, `produtos_${new Date().toISOString().split('T')[0]}.xlsx`);
 }
+
+export function exportProductTemplate(): void {
+  const headers = [
+    'Número PO',
+    'Última Atualização',
+    'Data PO',
+    'Código Item',
+    'Descrição',
+    'NCM',
+    'Garantia',
+    'Quantidade',
+    'Qtd Entregue',
+    'Valor Unitário',
+    'Moeda',
+    'Condições Pagamento',
+    'Data Entrega',
+    'Status',
+    'Observações',
+    'ID Requisição'
+  ];
+
+  const exampleData = [
+    {
+      'Número PO': 'PO-2024-001',
+      'Última Atualização': '2024-01-22',
+      'Data PO': '2024-01-15',
+      'Código Item': 'ITEM-001',
+      'Descrição': 'Exemplo de produto para importação',
+      'NCM': '12345678',
+      'Garantia': '12 meses',
+      'Quantidade': 10,
+      'Qtd Entregue': 0,
+      'Valor Unitário': 100.00,
+      'Moeda': 'BRL',
+      'Condições Pagamento': '30/60/90 dias',
+      'Data Entrega': '2024-02-15',
+      'Status': 'Pedido',
+      'Observações': 'Observações opcionais',
+      'ID Requisição': ''
+    }
+  ];
+
+  const worksheet = XLSX.utils.json_to_sheet([...exampleData], { header: headers });
+
+  const columnWidths = [
+    { wch: 15 },
+    { wch: 16 },
+    { wch: 12 },
+    { wch: 15 },
+    { wch: 40 },
+    { wch: 12 },
+    { wch: 15 },
+    { wch: 10 },
+    { wch: 12 },
+    { wch: 15 },
+    { wch: 8 },
+    { wch: 20 },
+    { wch: 12 },
+    { wch: 20 },
+    { wch: 30 },
+    { wch: 15 }
+  ];
+
+  worksheet['!cols'] = columnWidths;
+
+  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+  for (let C = range.s.c; C <= range.e.c; ++C) {
+    const address = XLSX.utils.encode_col(C) + '1';
+    if (!worksheet[address]) continue;
+    worksheet[address].s = {
+      font: { bold: true },
+      fill: { fgColor: { rgb: 'CCCCCC' } }
+    };
+  }
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Template Produtos');
+
+  XLSX.writeFile(workbook, `template_produtos_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
