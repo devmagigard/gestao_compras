@@ -160,6 +160,13 @@ export function RequisitionProductsModal({
     setProductFormOpen(true);
   };
 
+  const getDefaultProductData = () => {
+    return {
+      numeroPo: requisition?.rc || '',
+      requisitionId: requisition?.id || ''
+    };
+  };
+
   const handleEditProduct = (product: PurchaseOrderItem) => {
     setSelectedProduct(product);
     setProductFormOpen(true);
@@ -475,6 +482,7 @@ export function RequisitionProductsModal({
         onSave={handleSaveProduct}
         item={selectedProduct}
         uniqueValues={getUniqueValues()}
+        defaultValues={selectedProduct ? undefined : getDefaultProductData()}
       />
     </>
   );

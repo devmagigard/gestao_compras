@@ -12,6 +12,10 @@ interface PurchaseOrderItemFormProps {
     purchaseOrders: string[];
     itemCodes: string[];
   };
+  defaultValues?: {
+    numeroPo?: string;
+    requisitionId?: string;
+  };
 }
 
 export function PurchaseOrderItemForm({
@@ -19,7 +23,8 @@ export function PurchaseOrderItemForm({
   onClose,
   onSave,
   item,
-  uniqueValues
+  uniqueValues,
+  defaultValues
 }: PurchaseOrderItemFormProps) {
   const [formData, setFormData] = useState<Omit<PurchaseOrderItem, 'id' | 'createdAt' | 'updatedAt'>>({
     numeroPo: '',
@@ -62,7 +67,7 @@ export function PurchaseOrderItemForm({
       });
     } else {
       setFormData({
-        numeroPo: '',
+        numeroPo: defaultValues?.numeroPo || '',
         ultimaAtualizacao: new Date().toISOString().split('T')[0],
         dataPo: '',
         codItem: '',
@@ -77,10 +82,10 @@ export function PurchaseOrderItemForm({
         dataEntrega: '',
         status: 'Pedido',
         observacoes: '',
-        requisitionId: ''
+        requisitionId: defaultValues?.requisitionId || ''
       });
     }
-  }, [item, isOpen]);
+  }, [item, isOpen, defaultValues]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,11 +152,10 @@ export function PurchaseOrderItemForm({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Código do Item *
+                  Código do Item
                 </label>
                 <input
                   type="text"
-                  required
                   value={formData.codItem}
                   onChange={(e) => handleChange('codItem', e.target.value)}
                   list="item-codes"
