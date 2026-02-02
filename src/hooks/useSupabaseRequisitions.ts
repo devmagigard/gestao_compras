@@ -140,11 +140,16 @@ function sortByNumberDescending<T extends { rc?: string; numeroPo?: string }>(
     const valueA = field === 'rc' ? a.rc : a.numeroPo;
     const valueB = field === 'rc' ? b.rc : b.numeroPo;
 
-    // Extrair apenas os dígitos
-    const numA = parseInt((valueA || '').replace(/\D/g, ''), 10) || 0;
-    const numB = parseInt((valueB || '').replace(/\D/g, ''), 10) || 0;
+    // Extrair apenas os dígitos e garantir que números maiores venham primeiro
+    const extractNumber = (str: string) => {
+      const match = str.match(/\d+/);
+      return match ? parseInt(match[0], 10) : 0;
+    };
+    
+    const numA = extractNumber(valueA || '');
+    const numB = extractNumber(valueB || '');
 
-    // Ordem decrescente: maiores primeiro (1900 antes de 673)
+    // Ordem decrescente: números maiores primeiro (RC1900 antes de RC673)
     return numB - numA;
   });
 }
@@ -168,13 +173,13 @@ export function useSupabaseRequisitions() {
       const { data, error } = await supabase
         .from('requisitions')
         .select('*')
-        .order('rc', { ascending: false });
+        .order('created_at', { ascending: false }); // Primeiro ordenar por data de criação
 
       if (error) throw error;
 
       const convertedData = data?.map(convertFromSupabase) || [];
 
-      // Ordenar por RC numérico (números maiores primeiro)
+      // Depois ordenar por RC numérico (números maiores primeiro)
       const sorted = sortByNumberDescending(convertedData, 'rc');
 
       setRequisitions(sorted);
