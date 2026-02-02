@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Requisition } from '../../types';
-import { Edit, Trash2, Package, User, Calendar, DollarSign, Eye, AlertCircle, CalendarClock, ShoppingCart } from 'lucide-react';
+import { CreditCard as Edit, Trash2, Package, User, Calendar, DollarSign, Eye, AlertCircle, CalendarClock, ShoppingCart } from 'lucide-react';
 import { STATUS_COLORS, CRITICALITY_COLORS, REQUISITION_STATUSES, CRITICALITY_LEVELS } from '../../utils/constants';
 import { EditableCell } from './EditableCell';
 import { Tooltip } from '../UI/Tooltip';
@@ -65,20 +65,6 @@ export function RequisitionsTable({
   };
 
   const sortedRequisitions = [...requisitions].sort((a, b) => {
-    // Se estiver ordenando por RC, usar ordenação numérica
-    if (sortField === 'rc') {
-      const extractNumber = (str: string) => {
-        const match = str.match(/\d+/);
-        return match ? parseInt(match[0], 10) : 0;
-      };
-      
-      const numA = extractNumber(a.rc || '');
-      const numB = extractNumber(b.rc || '');
-      
-      return sortDirection === 'desc' ? numB - numA : numA - numB;
-    }
-    
-    // Para outros campos, usar ordenação padrão
     const aValue = a[sortField];
     const bValue = b[sortField];
 
