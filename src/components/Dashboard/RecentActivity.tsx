@@ -2,7 +2,7 @@ import React from 'react';
 import { Requisition } from '../../types';
 import { Clock, Package, User, Truck, DollarSign, AlertCircle, CalendarClock } from 'lucide-react';
 import { STATUS_COLORS, CRITICALITY_COLORS } from '../../utils/constants';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, formatDate } from '../../utils/formatters';
 import { createLocalDate } from '../../utils/dateHelpers';
 
 interface RecentActivityProps {
