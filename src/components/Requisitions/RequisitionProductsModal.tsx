@@ -272,7 +272,12 @@ export function RequisitionProductsModal({
       setProductFormOpen(false);
     } catch (err) {
       console.error('Erro ao salvar produto:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      let errorMessage = 'Erro desconhecido';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (err && typeof err === 'object' && 'message' in err && typeof (err as any).message === 'string') {
+        errorMessage = (err as any).message;
+      }
       alert(`Erro ao salvar produto: ${errorMessage}`);
     }
   };
