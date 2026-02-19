@@ -162,22 +162,6 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
     }
   }, [formData.quotationInclusion, formData.quotationType]);
 
-  // Importar as funções necessárias
-  const { convertBrazilianToISO } = require('../utils/dateHelpers');
-      
-      // Calcular previsão de entrega (prazo cotação + 7 dias aprovação + 7 dias entrega)
-      const calculatedDeliveryForecast = addDays(calculatedQuotationDeadline, 14);
-      
-      setFormData(prev => ({
-        ...prev,
-        quotationDeadline: calculatedQuotationDeadline,
-        deliveryForecast: calculatedDeliveryForecast
-      }));
-    }
-  }, [formData.quotationInclusion, formData.quotationType]);
-
-  // Atualizar data de atualização sempre que o formulário for modificado
-
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
