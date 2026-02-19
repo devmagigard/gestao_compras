@@ -130,10 +130,40 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
 
   // Cálculo automático das datas baseado no tipo de cotação
   useEffect(() => {
-    if (formData.quotationInclusion && isValidDate(formData.quotationInclusion)) {
+    if (formData.quotationInclusion && formData.quotationInclusion.trim() !== '') {
       // Calcular prazo de cotação baseado no tipo
       const quotationDays = formData.quotationType === 'Simples' ? 7 : 14;
-      const calculatedQuotationDeadline = addDays(formData.quotationInclusion, quotationDays);
+      
+      // Converter data brasileira para ISO se necessário
+      let isoDate = formData.quotationInclusion;
+      if (formData.quotationInclusion.includes('/')) {
+        isoDate = convertBrazilianToISO(formData.quotationInclusion);
+      }
+      
+      if (isoDate && isValidDate(isoDate)) {
+        const calculatedQuotationDeadline = addDays(isoDate, quotationDays);
+        
+        // Calcular previsão de entrega (prazo cotação + 14 dias)
+        const calculatedDeliveryForecast = addDays(calculatedQuotationDeadline, 14);
+        
+        setFormData(prev => ({
+          ...prev,
+          quotationDeadline: calculatedQuotationDeadline,
+          deliveryForecast: calculatedDeliveryForecast
+        }));
+      }
+    } else {
+      // Se não há data de inclusão, limpar as datas calculadas
+      setFormData(prev => ({
+        ...prev,
+        quotationDeadline: '',
+        deliveryForecast: ''
+      }));
+    }
+  }, [formData.quotationInclusion, formData.quotationType]);
+
+  // Importar as funções necessárias
+  const { convertBrazilianToISO } = require('../utils/dateHelpers');
       
       // Calcular previsão de entrega (prazo cotação + 7 dias aprovação + 7 dias entrega)
       const calculatedDeliveryForecast = addDays(calculatedQuotationDeadline, 14);
