@@ -35,9 +35,9 @@ export function PurchaseOrderItemForm({
     descricaoItem: '',
     ncm: '',
     garantia: '',
-    quantidade: 0,
-    quantidadeEntregue: 0,
-    valorUnitario: 0,
+    quantidade: '' as any,
+    quantidadeEntregue: '' as any,
+    valorUnitario: '' as any,
     moeda: 'BRL' as Currency,
     condicoesPagamento: '',
     dataEntrega: '',
@@ -75,9 +75,9 @@ export function PurchaseOrderItemForm({
         descricaoItem: '',
         ncm: '',
         garantia: '',
-        quantidade: 0,
-        quantidadeEntregue: 0,
-        valorUnitario: 0,
+        quantidade: '' as any,
+        quantidadeEntregue: '' as any,
+        valorUnitario: '' as any,
         moeda: 'BRL',
         condicoesPagamento: '',
         dataEntrega: '',
@@ -107,6 +107,13 @@ export function PurchaseOrderItemForm({
   };
 
   const handleChange = (field: keyof typeof formData, value: any) => {
+    // Para campos numéricos, permitir string vazia
+    if (field === 'quantidade' || field === 'quantidadeEntregue' || field === 'valorUnitario') {
+      if (value === '') {
+        setFormData(prev => ({ ...prev, [field]: '' as any }));
+        return;
+      }
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -248,7 +255,8 @@ export function PurchaseOrderItemForm({
                   min="0"
                   step="0.01"
                   value={formData.quantidade}
-                  onChange={(e) => handleChange('quantidade', parseFloat(e.target.value) || 0)}
+                  onChange={(e) => handleChange('quantidade', e.target.value === '' ? '' : parseFloat(e.target.value) || '')}
+                  placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -262,7 +270,8 @@ export function PurchaseOrderItemForm({
                   min="0"
                   step="0.01"
                   value={formData.quantidadeEntregue}
-                  onChange={(e) => handleChange('quantidadeEntregue', parseFloat(e.target.value) || 0)}
+                  onChange={(e) => handleChange('quantidadeEntregue', e.target.value === '' ? '' : parseFloat(e.target.value) || '')}
+                  placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -272,7 +281,7 @@ export function PurchaseOrderItemForm({
                   Falta Entregar
                 </label>
                 <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 font-medium">
-                  {(formData.quantidade - formData.quantidadeEntregue).toFixed(2)}
+                  {((parseFloat(formData.quantidade as any) || 0) - (parseFloat(formData.quantidadeEntregue as any) || 0)).toFixed(2)}
                 </div>
               </div>
             </div>
@@ -291,7 +300,8 @@ export function PurchaseOrderItemForm({
                   min="0"
                   step="0.01"
                   value={formData.valorUnitario}
-                  onChange={(e) => handleChange('valorUnitario', parseFloat(e.target.value) || 0)}
+                  onChange={(e) => handleChange('valorUnitario', e.target.value === '' ? '' : parseFloat(e.target.value) || '')}
+                  placeholder="0,00"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -327,7 +337,7 @@ export function PurchaseOrderItemForm({
               <div className="md:col-span-2">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-sm text-blue-800">
-                    <strong>Valor Total:</strong> {formData.moeda} {(formData.valorUnitario * formData.quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <strong>Valor Total:</strong> {formData.moeda} {((parseFloat(formData.valorUnitario as any) || 0) * (parseFloat(formData.quantidade as any) || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>

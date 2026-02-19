@@ -118,10 +118,11 @@ export function EditableCell({
         <input
           ref={inputRef as React.RefObject<HTMLInputElement>}
           type={type}
-          value={editValue as string}
+          value={type === 'number' && editValue === 0 ? '' : editValue as string}
           onChange={(e) => setEditValue(type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSave}
+          placeholder={type === 'number' ? '0' : ''}
           className="text-sm border border-blue-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[100px] bg-white shadow-sm"
         />
       )}

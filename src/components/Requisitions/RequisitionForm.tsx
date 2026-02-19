@@ -39,14 +39,14 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
     omieApproval: '',
     criticality: 'Média',
     dismemberedRc: '',
-    invoiceValue: 0,
+    invoiceValue: '' as any,
     invoiceNumber: '',
     paymentMethod: '',
     dueDate1: '',
     dueDate2: '',
     dueDate3: '',
     quotedBy: '',
-    freightValue: 0,
+    freightValue: '' as any,
     freightStatus: '',
     quotedSupplier: '',
     quotationType: 'Simples'
@@ -77,14 +77,14 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
         omieApproval: requisition.omieApproval || '',
         criticality: requisition.criticality || 'Média',
         dismemberedRc: requisition.dismemberedRc || '',
-        invoiceValue: requisition.invoiceValue || 0,
+        invoiceValue: requisition.invoiceValue || '' as any,
         invoiceNumber: requisition.invoiceNumber || '',
         paymentMethod: requisition.paymentMethod || '',
         dueDate1: requisition.dueDate1 || '',
         dueDate2: requisition.dueDate2 || '',
         dueDate3: requisition.dueDate3 || '',
         quotedBy: requisition.quotedBy || '',
-        freightValue: requisition.freightValue || 0,
+        freightValue: requisition.freightValue || '' as any,
         freightStatus: requisition.freightStatus || '',
         freightCompany: requisition.freightCompany || '',
         quotedSupplier: requisition.quotedSupplier || '',
@@ -112,14 +112,14 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
         omieApproval: '',
         criticality: 'Média',
         dismemberedRc: '',
-        invoiceValue: 0,
+        invoiceValue: '' as any,
         invoiceNumber: '',
         paymentMethod: '',
         dueDate1: '',
         dueDate2: '',
         dueDate3: '',
         quotedBy: '',
-        freightValue: 0,
+        freightValue: '' as any,
         freightStatus: '',
         freightCompany: '',
         quotedSupplier: '',
@@ -164,6 +164,13 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
   };
 
   const handleChange = (field: string, value: any) => {
+    // Para campos numéricos, permitir string vazia
+    if (field === 'invoiceValue' || field === 'freightValue') {
+      if (value === '') {
+        setFormData(prev => ({ ...prev, [field]: '' as any }));
+        return;
+      }
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -538,7 +545,8 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                     type="number"
                     step="0.01"
                     value={formData.invoiceValue}
-                    onChange={(e) => handleChange('invoiceValue', parseFloat(e.target.value) || 0)}
+                    onChange={(e) => handleChange('invoiceValue', e.target.value === '' ? '' : parseFloat(e.target.value) || '')}
+                    placeholder="0,00"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -655,7 +663,8 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                         type="number"
                         step="0.01"
                         value={formData.freightValue}
-                        onChange={(e) => handleChange('freightValue', parseFloat(e.target.value) || 0)}
+                        onChange={(e) => handleChange('freightValue', e.target.value === '' ? '' : parseFloat(e.target.value) || '')}
+                        placeholder="0,00"
                         className="w-full px-3 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                       />
                     </div>
