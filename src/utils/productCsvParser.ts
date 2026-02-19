@@ -117,6 +117,27 @@ export function parseProductCSVData(csvData: string): PurchaseOrderItem[] {
             }
             return '';
           }
+          
+          // Tentar converter formato MM/DD/YYYY (formato americano) para YYYY-MM-DD
+          if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(value)) {
+            const [month, day, year] = value.split('/');
+            const yearNum = parseInt(year);
+            const monthNum = parseInt(month);
+            const dayNum = parseInt(day);
+            
+            // Validate date components
+            if (yearNum >= 1900 && yearNum <= 2100 && 
+                monthNum >= 1 && monthNum <= 12 && 
+                dayNum >= 1 && dayNum <= 31) {
+              const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+              // Double check the date is valid
+              const testDate = new Date(formattedDate + 'T00:00:00');
+              if (!isNaN(testDate.getTime())) {
+                return formattedDate;
+              }
+            }
+            return '';
+          }
 
           try {
             const dateWithTime = value.includes('T') ? value : value + 'T00:00:00';

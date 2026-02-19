@@ -166,7 +166,7 @@ export function RecentActivity({ requisitions, isDarkMode = false }: RecentActiv
                 <div className={`text-xs ml-4 flex-shrink-0 ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-500'
                 }`}>
-                  {new Date(req.updatedAt).toLocaleDateString('pt-BR')}
+                  {formatDate(req.updatedAt)}
                 </div>
               </div>
             </div>

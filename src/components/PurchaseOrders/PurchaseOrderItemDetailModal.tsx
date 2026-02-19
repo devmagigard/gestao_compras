@@ -244,11 +244,11 @@ export function PurchaseOrderItemDetailModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-gray-500">
               <div>
                 <span className="font-medium">Criado em:</span>{' '}
-                {new Date(item.createdAt).toLocaleString('pt-BR')}
+                {formatDate(item.createdAt)} às {new Date(item.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
               </div>
               <div>
                 <span className="font-medium">Atualizado em:</span>{' '}
-                {new Date(item.updatedAt).toLocaleString('pt-BR')}
+                {formatDate(item.updatedAt)} às {new Date(item.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
               </div>
             </div>
           </div>

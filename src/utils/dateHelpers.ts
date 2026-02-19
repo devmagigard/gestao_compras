@@ -20,6 +20,55 @@ export function getCurrentDate(): string {
 }
 
 /**
+ * Formata uma data para o formato brasileiro (dd/mm/yyyy)
+ * @param dateString - String da data no formato YYYY-MM-DD
+ * @returns String da data no formato dd/mm/yyyy
+ */
+export function formatDateToBrazilian(dateString: string): string {
+  if (!dateString) return '';
+  
+  try {
+    const [year, month, day] = dateString.split('-').map(Number);
+    
+    // Validate date components
+    if (!year || !month || !day || month < 1 || month > 12 || day < 1 || day > 31) {
+      return '';
+    }
+    
+    const formattedDay = day.toString().padStart(2, '0');
+    const formattedMonth = month.toString().padStart(2, '0');
+    
+    return `${formattedDay}/${formattedMonth}/${year}`;
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Converte data do formato brasileiro (dd/mm/yyyy) para formato ISO (yyyy-mm-dd)
+ * @param brazilianDate - String da data no formato dd/mm/yyyy
+ * @returns String da data no formato yyyy-mm-dd
+ */
+export function convertBrazilianToISO(brazilianDate: string): string {
+  if (!brazilianDate) return '';
+  
+  try {
+    const [day, month, year] = brazilianDate.split('/').map(Number);
+    
+    // Validate date components
+    if (!year || !month || !day || month < 1 || month > 12 || day < 1 || day > 31) {
+      return '';
+    }
+    
+    const formattedMonth = month.toString().padStart(2, '0');
+    const formattedDay = day.toString().padStart(2, '0');
+    
+    return `${year}-${formattedMonth}-${formattedDay}`;
+  } catch {
+    return '';
+  }
+}
+/**
  * Cria um objeto Date a partir de uma string YYYY-MM-DD garantindo timezone local
  * @param dateString - String da data no formato YYYY-MM-DD
  * @returns Objeto Date no timezone local

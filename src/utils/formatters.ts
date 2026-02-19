@@ -26,11 +26,16 @@ export function formatDate(dateString: string): string {
     const dateOnly = dateString.split('T')[0]; // Get only the date part (YYYY-MM-DD)
     const [year, month, day] = dateOnly.split('-').map(Number);
     
-    // Create date using local timezone constructor (year, month-1, day)
-    // Month is 0-indexed in JavaScript Date constructor
-    const localDate = new Date(year, month - 1, day);
+    // Validate date components
+    if (!year || !month || !day || month < 1 || month > 12 || day < 1 || day > 31) {
+      return '-';
+    }
     
-    return localDate.toLocaleDateString('pt-BR');
+    // Format manually to ensure Brazilian format (dd/mm/yyyy)
+    const formattedDay = day.toString().padStart(2, '0');
+    const formattedMonth = month.toString().padStart(2, '0');
+    
+    return `${formattedDay}/${formattedMonth}/${year}`;
   } catch {
     return dateString;
   }
