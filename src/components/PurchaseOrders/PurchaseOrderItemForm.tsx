@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { PurchaseOrderItem, PurchaseOrderStatus, Currency } from '../../types';
 import { PURCHASE_ORDER_STATUSES, CURRENCIES } from '../../utils/constants';
+import { DateInput } from '../UI/DateInput';
 
 interface PurchaseOrderItemFormProps {
   isOpen: boolean;
@@ -154,8 +155,7 @@ export function PurchaseOrderItemForm({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Data PO
                 </label>
-                <input
-                  type="date"
+                <DateInput
                   value={formData.dataPo}
                   onChange={(e) => handleChange('dataPo', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -342,8 +342,7 @@ export function PurchaseOrderItemForm({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Última Atualização
                 </label>
-                <input
-                  type="date"
+                <DateInput
                   value={formData.ultimaAtualizacao}
                   onChange={(e) => handleChange('ultimaAtualizacao', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -354,8 +353,7 @@ export function PurchaseOrderItemForm({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Data de Entrega
                 </label>
-                <input
-                  type="date"
+                <DateInput
                   value={formData.dataEntrega}
                   onChange={(e) => handleChange('dataEntrega', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

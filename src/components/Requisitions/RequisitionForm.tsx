@@ -4,6 +4,7 @@ import { Requisition } from '../../types';
 import { REQUISITION_STATUSES, CRITICALITY_LEVELS, COMMON_CATEGORIES, QUOTATION_TYPES } from '../../utils/constants';
 import { addDays, getCurrentDate, isValidDate } from '../../utils/dateHelpers';
 import { normalizeProjectName } from '../../utils/formatters';
+import { DateInput } from '../UI/DateInput';
 
 interface RequisitionFormProps {
   isOpen: boolean;
@@ -403,8 +404,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                     <label className="block text-sm font-medium text-blue-700 mb-2">
                       Inclusão para Cotação *
                     </label>
-                    <input
-                      type="date"
+                    <DateInput
                       value={formData.quotationInclusion}
                       onChange={(e) => handleChange('quotationInclusion', e.target.value)}
                       className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -418,10 +418,10 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                     <label className="block text-sm font-medium text-blue-700 mb-2">
                       Prazo Cotação (Calculado)
                     </label>
-                    <input
-                      type="date"
+                    <DateInput
                       value={formData.quotationDeadline}
-                      readOnly
+                      onChange={() => {}} // Read-only
+                      disabled={true}
                       className="w-full px-3 py-2 border border-blue-300 rounded-lg bg-blue-100 text-blue-800 cursor-not-allowed"
                     />
                     <p className="text-xs text-blue-600 mt-1">
@@ -433,8 +433,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                     <label className="block text-sm font-medium text-blue-700 mb-2">
                       Previsão de Entrega (Calculada)
                     </label>
-                    <input
-                      type="date"
+                    <DateInput
                       value={formData.deliveryForecast}
                       onChange={(e) => handleChange('deliveryForecast', e.target.value)}
                       className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -459,8 +458,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                   <label className="block text-sm font-medium text-blue-700 mb-2">
                     Data Atualização
                   </label>
-                  <input
-                    type="date"
+                  <DateInput
                     value={formData.updateDate}
                     onChange={(e) => handleChange('updateDate', e.target.value)}
                     className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -474,8 +472,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Inclusão no OMIE
                   </label>
-                  <input
-                    type="date"
+                  <DateInput
                     value={formData.omieInclusion}
                     onChange={(e) => handleChange('omieInclusion', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -486,8 +483,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Enviado para Aprovação
                   </label>
-                  <input
-                    type="date"
+                  <DateInput
                     value={formData.sentForApproval}
                     onChange={(e) => handleChange('sentForApproval', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -498,8 +494,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Aprovação OMIE
                   </label>
-                  <input
-                    type="date"
+                  <DateInput
                     value={formData.omieApproval}
                     onChange={(e) => handleChange('omieApproval', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -513,8 +508,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     PO Enviado
                   </label>
-                  <input
-                    type="date"
+                  <DateInput
                     value={formData.poSent}
                     onChange={(e) => handleChange('poSent', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -591,8 +585,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                       <label className="block text-sm font-medium text-blue-700 mb-2">
                         Vencimento Parcela 1
                       </label>
-                      <input
-                        type="date"
+                      <DateInput
                         value={formData.dueDate1}
                         onChange={(e) => handleChange('dueDate1', e.target.value)}
                         className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -603,8 +596,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                       <label className="block text-sm font-medium text-blue-700 mb-2">
                         Vencimento Parcela 2
                       </label>
-                      <input
-                        type="date"
+                      <DateInput
                         value={formData.dueDate2}
                         onChange={(e) => handleChange('dueDate2', e.target.value)}
                         className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -615,8 +607,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                       <label className="block text-sm font-medium text-blue-700 mb-2">
                         Vencimento Parcela 3
                       </label>
-                      <input
-                        type="date"
+                      <DateInput
                         value={formData.dueDate3}
                         onChange={(e) => handleChange('dueDate3', e.target.value)}
                         className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

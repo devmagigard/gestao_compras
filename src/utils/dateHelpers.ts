@@ -68,6 +68,52 @@ export function convertBrazilianToISO(brazilianDate: string): string {
     return '';
   }
 }
+
+/**
+ * Converte data do formato ISO (yyyy-mm-dd) para formato brasileiro (dd/mm/yyyy)
+ * @param isoDate - String da data no formato yyyy-mm-dd
+ * @returns String da data no formato dd/mm/yyyy
+ */
+export function convertISOToBrazilian(isoDate: string): string {
+  if (!isoDate) return '';
+  
+  try {
+    const [year, month, day] = isoDate.split('-').map(Number);
+    
+    // Validate date components
+    if (!year || !month || !day || month < 1 || month > 12 || day < 1 || day > 31) {
+      return '';
+    }
+    
+    const formattedDay = day.toString().padStart(2, '0');
+    const formattedMonth = month.toString().padStart(2, '0');
+    
+    return `${formattedDay}/${formattedMonth}/${year}`;
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Normaliza uma data para o formato ISO, aceitando tanto formato brasileiro quanto ISO
+ * @param dateValue - String da data em qualquer formato
+ * @returns String da data no formato yyyy-mm-dd
+ */
+export function normalizeDateToISO(dateValue: string): string {
+  if (!dateValue) return '';
+  
+  // Se já está no formato ISO
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return dateValue;
+  }
+  
+  // Se está no formato brasileiro
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateValue)) {
+    return convertBrazilianToISO(dateValue);
+  }
+  
+  return '';
+}
 /**
  * Cria um objeto Date a partir de uma string YYYY-MM-DD garantindo timezone local
  * @param dateString - String da data no formato YYYY-MM-DD
