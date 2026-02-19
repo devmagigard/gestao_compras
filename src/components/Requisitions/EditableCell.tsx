@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Check, X } from 'lucide-react';
 import { formatDate } from '../../utils/formatters';
+import { DateInput } from '../UI/DateInput';
 
 interface EditableCellProps {
   value: string | number | boolean;
@@ -101,6 +102,12 @@ export function EditableCell({
             setIsEditing(false);
           }}
           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors"
+        />
+      ) : type === 'date' ? (
+        <DateInput
+          value={editValue as string}
+          onChange={(value) => setEditValue(value)}
+          className="text-sm border border-blue-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[120px] bg-white shadow-sm"
         />
       ) : (
         <input
