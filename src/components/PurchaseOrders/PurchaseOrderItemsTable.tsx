@@ -218,7 +218,7 @@ export function PurchaseOrderItemsTable({
               <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider hidden xl:table-cell ${
                 isDarkMode ? 'text-gray-400' : 'text-gray-600'
               }`}>
-                Garantia
+                Observações
               </th>
               <th className={`px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider ${
                 isDarkMode ? 'text-gray-400' : 'text-gray-600'
@@ -382,13 +382,17 @@ export function PurchaseOrderItemsTable({
                   />
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap hidden xl:table-cell align-middle">
-                  <EditableCell
-                    value={item.garantia || ''}
-                    onSave={(value) => handleCellUpdate(item.id, 'garantia', value)}
-                    className={`text-sm ${
-                      isDarkMode ? 'text-white' : 'text-gray-900'
-                    }`}
-                  />
+                  <Tooltip content={item.observacoes || ''} maxWidth="max-w-lg">
+                    <div className="cursor-help">
+                      <EditableCell
+                        value={item.observacoes || ''}
+                        onSave={(value) => handleCellUpdate(item.id, 'observacoes', value)}
+                        className={`text-sm max-w-xs truncate ${
+                          isDarkMode ? 'text-white' : 'text-gray-900'
+                        }`}
+                      />
+                    </div>
+                  </Tooltip>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium align-middle">
                   <div className="flex items-center justify-end space-x-1">

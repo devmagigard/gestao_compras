@@ -328,11 +328,16 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                   Observações
                 </label>
                 <textarea
-                  rows={3}
+                  rows={4}
                   value={formData.observations}
                   onChange={(e) => handleChange('observations', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Observações sobre a requisição..."
+                  maxLength={2000}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.observations.length}/2000 caracteres
+                </p>
               </div>
             </div>
 

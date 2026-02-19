@@ -61,7 +61,12 @@ export function EditableCell({
     if (type === 'date' && value) {
       return formatDate(value as string);
     }
-    return value?.toString() || '-';
+    const stringValue = value?.toString() || '-';
+    // Se o texto for muito longo, truncar para exibição
+    if (stringValue.length > 50) {
+      return stringValue.substring(0, 47) + '...';
+    }
+    return stringValue;
   };
 
   if (!isEditing) {

@@ -370,10 +370,14 @@ export function PurchaseOrderItemForm({
             <textarea
               value={formData.observacoes}
               onChange={(e) => handleChange('observacoes', e.target.value)}
-              rows={4}
+              rows={6}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Observações adicionais sobre o produto..."
+              maxLength={2000}
             />
+            <p className="text-xs text-gray-500 mt-1">
+              {formData.observacoes.length}/2000 caracteres
+            </p>
           </div>
 
           {/* Buttons */}

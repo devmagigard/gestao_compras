@@ -475,12 +475,12 @@ export function RequisitionsTable({
                   />
                 </td>
                 <td className="px-4 py-3 max-w-xs hidden xl:table-cell align-middle">
-                  <Tooltip content={requisition.observations || ''} maxWidth="max-w-md">
+                  <Tooltip content={requisition.observations || ''} maxWidth="max-w-lg">
                     <div className="cursor-help">
                       <EditableCell
                         value={requisition.observations || ''}
                         onSave={(value) => handleCellUpdate(requisition.id, 'observations', value)}
-                        className={`text-sm line-clamp-2 ${
+                        className={`text-sm max-w-xs truncate ${
                           isDarkMode ? 'text-white' : 'text-gray-900'
                         }`}
                       />
