@@ -180,22 +180,41 @@ export function RequisitionProductsModal({
       };
 
       if (selectedProduct) {
+        // Atualizar produto existente
         const supabaseUpdates: any = {};
-        if (productData.numeroPo !== undefined) supabaseUpdates.numero_po = productData.numeroPo;
-        if (productData.ultimaAtualizacao !== undefined) supabaseUpdates.ultima_atualizacao = productData.ultimaAtualizacao || null;
-        if (productData.dataPo !== undefined) supabaseUpdates.data_po = productData.dataPo || null;
-        if (productData.codItem !== undefined) supabaseUpdates.cod_item = productData.codItem;
-        if (productData.descricaoItem !== undefined) supabaseUpdates.descricao_item = productData.descricaoItem;
-        if (productData.ncm !== undefined) supabaseUpdates.ncm = productData.ncm || null;
-        if (productData.garantia !== undefined) supabaseUpdates.garantia = productData.garantia || null;
-        if (productData.quantidade !== undefined) supabaseUpdates.quantidade = productData.quantidade || 0;
-        if (productData.quantidadeEntregue !== undefined) supabaseUpdates.quantidade_entregue = productData.quantidadeEntregue || 0;
-        if (productData.valorUnitario !== undefined) supabaseUpdates.valor_unitario = productData.valorUnitario || 0;
-        if (productData.moeda !== undefined) supabaseUpdates.moeda = productData.moeda;
-        if (productData.condicoesPagamento !== undefined) supabaseUpdates.condicoes_pagamento = productData.condicoesPagamento || null;
-        if (productData.dataEntrega !== undefined) supabaseUpdates.data_entrega = productData.dataEntrega || null;
-        if (productData.status !== undefined) supabaseUpdates.status = productData.status;
-        if (productData.observacoes !== undefined) supabaseUpdates.observacoes = productData.observacoes || null;
+        
+        const formatDateForSupabase = (dateValue: string): string | null => {
+          if (!dateValue || dateValue.trim() === '') return null;
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+            return dateValue;
+          }
+          try {
+            const date = new Date(dateValue);
+            if (isNaN(date.getTime())) return null;
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+          } catch {
+            return null;
+          }
+        };
+        
+        supabaseUpdates.numero_po = dataWithRequisition.numeroPo;
+        supabaseUpdates.ultima_atualizacao = formatDateForSupabase(dataWithRequisition.ultimaAtualizacao) || new Date().toISOString().split('T')[0];
+        supabaseUpdates.data_po = formatDateForSupabase(dataWithRequisition.dataPo);
+        supabaseUpdates.cod_item = dataWithRequisition.codItem || null;
+        supabaseUpdates.descricao_item = dataWithRequisition.descricaoItem;
+        supabaseUpdates.ncm = dataWithRequisition.ncm || null;
+        supabaseUpdates.garantia = dataWithRequisition.garantia || null;
+        supabaseUpdates.quantidade = dataWithRequisition.quantidade || 0;
+        supabaseUpdates.quantidade_entregue = dataWithRequisition.quantidadeEntregue || 0;
+        supabaseUpdates.valor_unitario = dataWithRequisition.valorUnitario || 0;
+        supabaseUpdates.moeda = dataWithRequisition.moeda || 'BRL';
+        supabaseUpdates.condicoes_pagamento = dataWithRequisition.condicoesPagamento || null;
+        supabaseUpdates.data_entrega = formatDateForSupabase(dataWithRequisition.dataEntrega);
+        supabaseUpdates.status = dataWithRequisition.status;
+        supabaseUpdates.observacoes = dataWithRequisition.observacoes || null;
         supabaseUpdates.requisition_id = requisition!.id;
 
         const { error } = await supabase
@@ -205,7 +224,43 @@ export function RequisitionProductsModal({
 
         if (error) throw error;
       } else {
-        const supabaseData = convertToSupabase(dataWithRequisition);
+        // Criar novo produto
+        const formatDateForSupabase = (dateValue: string): string | null => {
+          if (!dateValue || dateValue.trim() === '') return null;
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+            return dateValue;
+          }
+          try {
+            const date = new Date(dateValue);
+            if (isNaN(date.getTime())) return null;
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+          } catch {
+            return null;
+          }
+        };
+        
+        const supabaseData = {
+          numero_po: dataWithRequisition.numeroPo,
+          ultima_atualizacao: formatDateForSupabase(dataWithRequisition.ultimaAtualizacao) || new Date().toISOString().split('T')[0],
+          data_po: formatDateForSupabase(dataWithRequisition.dataPo),
+          cod_item: dataWithRequisition.codItem || null,
+          descricao_item: dataWithRequisition.descricaoItem,
+          ncm: dataWithRequisition.ncm || null,
+          garantia: dataWithRequisition.garantia || null,
+          quantidade: dataWithRequisition.quantidade || 0,
+          quantidade_entregue: dataWithRequisition.quantidadeEntregue || 0,
+          valor_unitario: dataWithRequisition.valorUnitario || 0,
+          moeda: dataWithRequisition.moeda || 'BRL',
+          condicoes_pagamento: dataWithRequisition.condicoesPagamento || null,
+          data_entrega: formatDateForSupabase(dataWithRequisition.dataEntrega),
+          status: dataWithRequisition.status,
+          observacoes: dataWithRequisition.observacoes || null,
+          requisition_id: requisition!.id
+        };
+        
         const { error } = await supabase
           .from('purchase_order_items')
           .insert([supabaseData]);
@@ -217,7 +272,8 @@ export function RequisitionProductsModal({
       setProductFormOpen(false);
     } catch (err) {
       console.error('Erro ao salvar produto:', err);
-      alert('Erro ao salvar produto. Tente novamente.');
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      alert(`Erro ao salvar produto: ${errorMessage}`);
     }
   };
 

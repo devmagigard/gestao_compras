@@ -92,7 +92,7 @@ function convertToSupabase(data: Omit<PurchaseOrderItem, 'id' | 'createdAt' | 'u
     numero_po: data.numeroPo,
     ultima_atualizacao: formatDateForSupabase(data.ultimaAtualizacao) || new Date().toISOString().split('T')[0],
     data_po: formatDateForSupabase(data.dataPo),
-    cod_item: data.codItem,
+    cod_item: data.codItem || null,
     descricao_item: data.descricaoItem,
     ncm: data.ncm || null,
     garantia: data.garantia || null,

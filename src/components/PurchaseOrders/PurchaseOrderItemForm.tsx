@@ -89,6 +89,18 @@ export function PurchaseOrderItemForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validação básica
+    if (!formData.numeroPo.trim()) {
+      alert('Número PO é obrigatório');
+      return;
+    }
+    
+    if (!formData.descricaoItem.trim()) {
+      alert('Descrição do item é obrigatória');
+      return;
+    }
+    
     onSave(formData);
     onClose();
   };
