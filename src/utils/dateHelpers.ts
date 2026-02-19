@@ -136,6 +136,10 @@ export function createLocalDate(dateString: string): Date {
  */
 export function isValidDate(dateString: string): boolean {
   if (!dateString) return false;
-  const date = new Date(dateString);
-  return !isNaN(date.getTime());
+  
+  // Verificar formato YYYY-MM-DD
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return false;
+  
+  const date = new Date(dateString + 'T00:00:00');
+  return !isNaN(date.getTime()) && date.getFullYear() >= 1900 && date.getFullYear() <= 2100;
 }
