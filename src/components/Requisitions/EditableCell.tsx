@@ -33,12 +33,28 @@ export function EditableCell({
     }
   }, [isEditing, type]);
 
+  // Initialize editValue when starting to edit
+  useEffect(() => {
+    if (isEditing) {
+      if (type === 'number' && typeof value === 'number') {
+        // For numbers, show formatted value or empty string if zero
+        if (value === 0) {
+          setEditValue('');
+        } else {
+          setEditValue(value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        }
+      } else {
+        setEditValue(value);
+      }
+    }
+  }, [isEditing, value, type]);
   const handleSave = () => {
     let finalValue = editValue;
     
     if (type === 'number' && typeof editValue === 'string') {
-      const numericValue = editValue.replace(/\./g, '').replace(',', '.');
-      const parsed = parseFloat(numericValue);
+      // Replace thousands separators and convert comma to dot
+      const cleanValue = editValue.replace(/\./g, '').replace(',', '.');
+      const parsed = parseFloat(cleanValue);
       finalValue = isNaN(parsed) ? 0 : parsed;
     }
     
@@ -64,7 +80,8 @@ export function EditableCell({
     if (displayValue) return displayValue;
     if (type === 'checkbox') return value ? 'Sim' : 'Não';
     if (type === 'number' && typeof value === 'number') {
-      return value.toLocaleString('pt-BR');
+      if (value === 0) return '-';
+      return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
     if (type === 'date' && value) {
       return formatDate(value as string);
@@ -125,27 +142,17 @@ export function EditableCell({
       ) : (
         <input
           ref={inputRef as React.RefObject<HTMLInputElement>}
-          type={type === 'number' ? 'text' : type}
+          type="text"
           value={
-            type === 'number' 
-              ? (typeof editValue === 'number' && editValue !== 0 
-                  ? editValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                  : editValue === '' ? '' : editValue as string)
-              : (editValue === 0 ? '' : editValue as string)
+            editValue as string
           }
           onChange={(e) => {
             const value = e.target.value;
+            // For number type, allow only digits, comma, and dot
             if (type === 'number') {
-              if (value === '') {
-                setEditValue('');
-              } else {
-                const numericValue = value.replace(/\./g, '').replace(',', '.');
-                const parsed = parseFloat(numericValue);
-                if (!isNaN(parsed)) {
-                  setEditValue(parsed);
-                } else if (value.match(/^[\d,\.]*$/)) {
-                  setEditValue(value);
-                }
+              // Allow digits, comma, and dot
+              if (value === '' || /^[\d,.]*$/.test(value)) {
+                setEditValue(value);
               }
             } else {
               setEditValue(value);
