@@ -98,7 +98,7 @@ function convertToSupabase(data: Omit<PurchaseOrderItem, 'id' | 'createdAt' | 'u
     garantia: data.garantia || null,
     quantidade: data.quantidade || 0,
     quantidade_entregue: data.quantidadeEntregue || 0,
-    valor_unitario: data.valorUnitario || 0,
+    valor_unitario: typeof data.valorUnitario === 'number' ? data.valorUnitario : (typeof data.valorUnitario === 'string' && data.valorUnitario !== '' ? parseFloat(data.valorUnitario.replace(',', '.')) || 0 : 0),
     moeda: data.moeda || 'BRL',
     condicoes_pagamento: data.condicoesPagamento || null,
     data_entrega: formatDateForSupabase(data.dataEntrega),

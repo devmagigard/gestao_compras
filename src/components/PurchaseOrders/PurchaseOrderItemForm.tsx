@@ -251,11 +251,24 @@ export function PurchaseOrderItemForm({
                   Quantidade Total
                 </label>
                 <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.quantidade}
-                  onChange={(e) => handleChange('quantidade', e.target.value === '' ? '' : parseFloat(e.target.value) || '')}
+                  type="text"
+                  value={typeof formData.quantidade === 'number' && formData.quantidade !== 0 
+                    ? formData.quantidade.toString().replace('.', ',')
+                    : formData.quantidade === '' ? '' : ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '') {
+                      handleChange('quantidade', '');
+                    } else {
+                      const numericValue = value.replace(',', '.');
+                      const parsed = parseFloat(numericValue);
+                      if (!isNaN(parsed)) {
+                        handleChange('quantidade', parsed);
+                      } else if (value.match(/^[\d,\.]*$/)) {
+                        handleChange('quantidade', value);
+                      }
+                    }
+                  }}
                   placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -266,11 +279,24 @@ export function PurchaseOrderItemForm({
                   Quantidade Entregue
                 </label>
                 <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.quantidadeEntregue}
-                  onChange={(e) => handleChange('quantidadeEntregue', e.target.value === '' ? '' : parseFloat(e.target.value) || '')}
+                  type="text"
+                  value={typeof formData.quantidadeEntregue === 'number' && formData.quantidadeEntregue !== 0 
+                    ? formData.quantidadeEntregue.toString().replace('.', ',')
+                    : formData.quantidadeEntregue === '' ? '' : ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '') {
+                      handleChange('quantidadeEntregue', '');
+                    } else {
+                      const numericValue = value.replace(',', '.');
+                      const parsed = parseFloat(numericValue);
+                      if (!isNaN(parsed)) {
+                        handleChange('quantidadeEntregue', parsed);
+                      } else if (value.match(/^[\d,\.]*$/)) {
+                        handleChange('quantidadeEntregue', value);
+                      }
+                    }
+                  }}
                   placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -296,11 +322,24 @@ export function PurchaseOrderItemForm({
                   Valor Unitário
                 </label>
                 <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.valorUnitario}
-                  onChange={(e) => handleChange('valorUnitario', e.target.value === '' ? '' : parseFloat(e.target.value) || '')}
+                  type="text"
+                  value={typeof formData.valorUnitario === 'number' && formData.valorUnitario !== 0 
+                    ? formData.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    : formData.valorUnitario === '' ? '' : ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '') {
+                      handleChange('valorUnitario', '');
+                    } else {
+                      const numericValue = value.replace(/\./g, '').replace(',', '.');
+                      const parsed = parseFloat(numericValue);
+                      if (!isNaN(parsed)) {
+                        handleChange('valorUnitario', parsed);
+                      } else if (value.match(/^[\d,\.]*$/)) {
+                        handleChange('valorUnitario', value);
+                      }
+                    }
+                  }}
                   placeholder="0,00"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />

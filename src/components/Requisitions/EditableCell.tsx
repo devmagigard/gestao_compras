@@ -34,7 +34,15 @@ export function EditableCell({
   }, [isEditing, type]);
 
   const handleSave = () => {
-    onSave(editValue);
+    let finalValue = editValue;
+    
+    if (type === 'number' && typeof editValue === 'string') {
+      const numericValue = editValue.replace(/\./g, '').replace(',', '.');
+      const parsed = parseFloat(numericValue);
+      finalValue = isNaN(parsed) ? 0 : parsed;
+    }
+    
+    onSave(finalValue);
     setIsEditing(false);
   };
 
@@ -117,12 +125,35 @@ export function EditableCell({
       ) : (
         <input
           ref={inputRef as React.RefObject<HTMLInputElement>}
-          type={type}
-          value={type === 'number' && editValue === 0 ? '' : editValue as string}
-          onChange={(e) => setEditValue(type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value)}
+          type={type === 'number' ? 'text' : type}
+          value={
+            type === 'number' 
+              ? (typeof editValue === 'number' && editValue !== 0 
+                  ? editValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                  : editValue === '' ? '' : editValue as string)
+              : (editValue === 0 ? '' : editValue as string)
+          }
+          onChange={(e) => {
+            const value = e.target.value;
+            if (type === 'number') {
+              if (value === '') {
+                setEditValue('');
+              } else {
+                const numericValue = value.replace(/\./g, '').replace(',', '.');
+                const parsed = parseFloat(numericValue);
+                if (!isNaN(parsed)) {
+                  setEditValue(parsed);
+                } else if (value.match(/^[\d,\.]*$/)) {
+                  setEditValue(value);
+                }
+              }
+            } else {
+              setEditValue(value);
+            }
+          }}
           onKeyDown={handleKeyDown}
           onBlur={handleSave}
-          placeholder={type === 'number' ? '0' : ''}
+          placeholder={type === 'number' ? '0,00' : ''}
           className="text-sm border border-blue-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[100px] bg-white shadow-sm"
         />
       )}
