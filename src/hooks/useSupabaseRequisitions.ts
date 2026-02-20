@@ -173,13 +173,13 @@ export function useSupabaseRequisitions() {
       const { data, error } = await supabase
         .from('requisitions')
         .select('*')
-        .order('created_at', { ascending: false }); // Primeiro ordenar por data de criação
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
       const convertedData = data?.map(convertFromSupabase) || [];
 
-      // Depois ordenar por RC numérico (números maiores primeiro)
+      // Ordenar por RC numérico (números maiores primeiro) - mais recentes primeiro
       const sorted = sortByNumberDescending(convertedData, 'rc');
 
       setRequisitions(sorted);
@@ -440,8 +440,8 @@ export function useSupabaseRequisitions() {
       });
     }
 
-    // Manter ordenação por RC após filtrar
-    sortByNumberDescending(filtered, 'rc');
+    // Manter ordenação por RC após filtrar (números maiores primeiro)
+    filtered = sortByNumberDescending(filtered, 'rc');
 
     setFilteredRequisitions(filtered);
   };

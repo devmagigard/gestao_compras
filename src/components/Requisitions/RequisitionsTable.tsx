@@ -31,7 +31,7 @@ export function RequisitionsTable({
 }: RequisitionsTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
-  const [sortField, setSortField] = useState<keyof Requisition>('rc');
+  const [sortField, setSortField] = useState<keyof Requisition>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
 
@@ -65,6 +65,20 @@ export function RequisitionsTable({
   };
 
   const sortedRequisitions = [...requisitions].sort((a, b) => {
+    // Ordenação especial para RC (numérica)
+    if (sortField === 'rc') {
+      const extractNumber = (rc: string) => {
+        const match = rc.match(/\d+/);
+        return match ? parseInt(match[0], 10) : 0;
+      };
+      
+      const numA = extractNumber(a.rc);
+      const numB = extractNumber(b.rc);
+      
+      return sortDirection === 'desc' ? numB - numA : numA - numB;
+    }
+    
+    // Ordenação padrão para outros campos
     const aValue = a[sortField];
     const bValue = b[sortField];
 
