@@ -556,43 +556,28 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                     Valor NF (R$)
                   </label>
                   <input
-                    type="text"
-                    value={typeof formData.invoiceValue === 'number' && formData.invoiceValue !== 0 
-                      ? formData.invoiceValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                      : formData.invoiceValue === '' ? '' : ''}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === '') {
-                        handleChange('invoiceValue', '');
-                      } else {
-                        const numericValue = value.replace(/\./g, '').replace(',', '.');
-                        const parsed = parseFloat(numericValue);
-                        if (!isNaN(parsed)) {
-                          handleChange('invoiceValue', parsed);
-                        } else if (value.match(/^[\d,\.]*$/)) {
-                          // Permite continuar digitando números incompletos
-                    type="text"
-                    value={typeof formData.freightValue === 'number' && formData.freightValue !== 0 
-                      ? formData.freightValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                      : formData.freightValue === '' ? '' : ''}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === '') {
-                        handleChange('freightValue', '');
-                      } else {
-                        const numericValue = value.replace(/\./g, '').replace(',', '.');
-                        const parsed = parseFloat(numericValue);
-                        if (!isNaN(parsed)) {
-                          handleChange('freightValue', parsed);
-                        } else if (value.match(/^[\d,\.]*$/)) {
-                          // Permite continuar digitando números incompletos
-                          handleChange('freightValue', value);
-                        }
-                      }
-                    }}
-                    placeholder="0,00"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+                     type="text"
+                     value={typeof formData.freightValue === 'number' && formData.freightValue !== 0 
+                       ? formData.freightValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                       : formData.freightValue === '' ? '' : ''}
+                     onChange={(e) => {
+                       const value = e.target.value;
+                       if (value === '') {
+                         handleChange('freightValue', '');
+                       } else {
+                         const numericValue = value.replace(/\./g, '').replace(',', '.');
+                         const parsed = parseFloat(numericValue);
+                         if (!isNaN(parsed)) {
+                           handleChange('freightValue', parsed);
+                         } else if (value.match(/^[\d,\.]*$/)) {
+                           // Permite continuar digitando números incompletos
+                           handleChange('freightValue', value);
+                         }
+                       }
+                     }}
+                     placeholder="0,00"
+                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                   />
                 </div>
 
                 <div>
