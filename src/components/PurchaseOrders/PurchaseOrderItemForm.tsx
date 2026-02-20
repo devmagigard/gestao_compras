@@ -46,6 +46,10 @@ export function PurchaseOrderItemForm({
     requisitionId: ''
   });
 
+  // Local states for numeric inputs to handle string representation during editing
+  const [localQuantidade, setLocalQuantidade] = useState('');
+  const [localQuantidadeEntregue, setLocalQuantidadeEntregue] = useState('');
+  const [localValorUnitario, setLocalValorUnitario] = useState('');
   useEffect(() => {
     if (item) {
       setFormData({
@@ -66,6 +70,23 @@ export function PurchaseOrderItemForm({
         observacoes: item.observacoes,
         requisitionId: item.requisitionId
       });
+      
+      // Initialize local states for numeric inputs
+      setLocalQuantidade(
+        typeof item.quantidade === 'number' && item.quantidade !== 0
+          ? item.quantidade.toString()
+          : ''
+      );
+      setLocalQuantidadeEntregue(
+        typeof item.quantidadeEntregue === 'number' && item.quantidadeEntregue !== 0
+          ? item.quantidadeEntregue.toString()
+          : ''
+      );
+      setLocalValorUnitario(
+        typeof item.valorUnitario === 'number' && item.valorUnitario !== 0
+          ? item.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+          : ''
+      );
     } else {
       setFormData({
         numeroPo: defaultValues?.numeroPo || '',
@@ -85,6 +106,11 @@ export function PurchaseOrderItemForm({
         observacoes: '',
         requisitionId: defaultValues?.requisitionId || ''
       });
+      
+      // Reset local states
+      setLocalQuantidade('');
+      setLocalQuantidadeEntregue('');
+      setLocalValorUnitario('');
     }
   }, [item, isOpen, defaultValues]);
 
@@ -252,21 +278,25 @@ export function PurchaseOrderItemForm({
                 </label>
                 <input
                   type="text"
-                  value={typeof formData.quantidade === 'number' && formData.quantidade !== 0 
-                    ? formData.quantidade.toString().replace('.', ',')
-                    : formData.quantidade === '' ? '' : ''}
+                  value={localQuantidade}
                   onChange={(e) => {
                     const value = e.target.value;
-                    if (value === '') {
-                      handleChange('quantidade', '');
+                    // Allow only digits, comma, and dot
+                    if (value === '' || /^[\d,.]*$/.test(value)) {
+                      setLocalQuantidade(value);
+                    }
+                  }}
+                  onBlur={() => {
+                    const cleanValue = localQuantidade.replace(/\./g, '').replace(',', '.');
+                    const parsed = parseFloat(cleanValue);
+                    const numericValue = isNaN(parsed) ? 0 : parsed;
+                    handleChange('quantidade', numericValue);
+                    
+                    // Re-format the display value
+                    if (numericValue === 0) {
+                      setLocalQuantidade('');
                     } else {
-                      const numericValue = value.replace(',', '.');
-                      const parsed = parseFloat(numericValue);
-                      if (!isNaN(parsed)) {
-                        handleChange('quantidade', parsed);
-                      } else if (value.match(/^[\d,\.]*$/)) {
-                        handleChange('quantidade', value);
-                      }
+                      setLocalQuantidade(numericValue.toString());
                     }
                   }}
                   placeholder="0"
@@ -280,21 +310,25 @@ export function PurchaseOrderItemForm({
                 </label>
                 <input
                   type="text"
-                  value={typeof formData.quantidadeEntregue === 'number' && formData.quantidadeEntregue !== 0 
-                    ? formData.quantidadeEntregue.toString().replace('.', ',')
-                    : formData.quantidadeEntregue === '' ? '' : ''}
+                  value={localQuantidadeEntregue}
                   onChange={(e) => {
                     const value = e.target.value;
-                    if (value === '') {
-                      handleChange('quantidadeEntregue', '');
+                    // Allow only digits, comma, and dot
+                    if (value === '' || /^[\d,.]*$/.test(value)) {
+                      setLocalQuantidadeEntregue(value);
+                    }
+                  }}
+                  onBlur={() => {
+                    const cleanValue = localQuantidadeEntregue.replace(/\./g, '').replace(',', '.');
+                    const parsed = parseFloat(cleanValue);
+                    const numericValue = isNaN(parsed) ? 0 : parsed;
+                    handleChange('quantidadeEntregue', numericValue);
+                    
+                    // Re-format the display value
+                    if (numericValue === 0) {
+                      setLocalQuantidadeEntregue('');
                     } else {
-                      const numericValue = value.replace(',', '.');
-                      const parsed = parseFloat(numericValue);
-                      if (!isNaN(parsed)) {
-                        handleChange('quantidadeEntregue', parsed);
-                      } else if (value.match(/^[\d,\.]*$/)) {
-                        handleChange('quantidadeEntregue', value);
-                      }
+                      setLocalQuantidadeEntregue(numericValue.toString());
                     }
                   }}
                   placeholder="0"
@@ -307,7 +341,7 @@ export function PurchaseOrderItemForm({
                   Falta Entregar
                 </label>
                 <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 font-medium">
-                  {((parseFloat(formData.quantidade as any) || 0) - (parseFloat(formData.quantidadeEntregue as any) || 0)).toFixed(2)}
+                  {((parseFloat(localQuantidade.replace(',', '.')) || 0) - (parseFloat(localQuantidadeEntregue.replace(',', '.')) || 0)).toFixed(2).replace('.', ',')}
                 </div>
               </div>
             </div>
@@ -323,21 +357,25 @@ export function PurchaseOrderItemForm({
                 </label>
                 <input
                   type="text"
-                  value={typeof formData.valorUnitario === 'number' && formData.valorUnitario !== 0 
-                    ? formData.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                    : formData.valorUnitario === '' ? '' : ''}
+                  value={localValorUnitario}
                   onChange={(e) => {
                     const value = e.target.value;
-                    if (value === '') {
-                      handleChange('valorUnitario', '');
+                    // Allow only digits, comma, and dot
+                    if (value === '' || /^[\d,.]*$/.test(value)) {
+                      setLocalValorUnitario(value);
+                    }
+                  }}
+                  onBlur={() => {
+                    const cleanValue = localValorUnitario.replace(/\./g, '').replace(',', '.');
+                    const parsed = parseFloat(cleanValue);
+                    const numericValue = isNaN(parsed) ? 0 : parsed;
+                    handleChange('valorUnitario', numericValue);
+                    
+                    // Re-format the display value
+                    if (numericValue === 0) {
+                      setLocalValorUnitario('');
                     } else {
-                      const numericValue = value.replace(/\./g, '').replace(',', '.');
-                      const parsed = parseFloat(numericValue);
-                      if (!isNaN(parsed)) {
-                        handleChange('valorUnitario', parsed);
-                      } else if (value.match(/^[\d,\.]*$/)) {
-                        handleChange('valorUnitario', value);
-                      }
+                      setLocalValorUnitario(numericValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
                     }
                   }}
                   placeholder="0,00"
@@ -376,7 +414,7 @@ export function PurchaseOrderItemForm({
               <div className="md:col-span-2">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-sm text-blue-800">
-                    <strong>Valor Total:</strong> {formData.moeda} {((parseFloat(formData.valorUnitario as any) || 0) * (parseFloat(formData.quantidade as any) || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <strong>Valor Total:</strong> {formData.moeda} {((parseFloat(localValorUnitario.replace(/\./g, '').replace(',', '.')) || 0) * (parseFloat(localQuantidade.replace(',', '.')) || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>

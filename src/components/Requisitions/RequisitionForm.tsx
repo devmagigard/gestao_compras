@@ -52,6 +52,10 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
     quotationType: 'Simples'
   });
 
+  // Local states for numeric inputs to handle string representation during editing
+  const [localInvoiceValue, setLocalInvoiceValue] = useState('');
+  const [localFreightValue, setLocalFreightValue] = useState('');
+
   // Atualizar formData quando a requisição mudar
   useEffect(() => {
     if (!isOpen) return; // Só executa quando o modal está aberto
@@ -90,6 +94,18 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
         quotedSupplier: requisition.quotedSupplier || '',
         quotationType: requisition.quotationType || 'Simples'
       });
+      
+      // Initialize local states for numeric inputs
+      setLocalInvoiceValue(
+        typeof requisition.invoiceValue === 'number' && requisition.invoiceValue !== 0
+          ? requisition.invoiceValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+          : ''
+      );
+      setLocalFreightValue(
+        typeof requisition.freightValue === 'number' && requisition.freightValue !== 0
+          ? requisition.freightValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+          : ''
+      );
     } else {
       // Resetar para valores padrão quando não há requisição (novo item)
       setFormData({
@@ -125,6 +141,10 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
         quotedSupplier: '',
         quotationType: 'Simples'
       });
+      
+      // Reset local states
+      setLocalInvoiceValue('');
+      setLocalFreightValue('');
     }
   }, [requisition, isOpen]);
 
@@ -556,28 +576,31 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                     Valor NF (R$)
                   </label>
                   <input
-                     type="text"
-                     value={typeof formData.freightValue === 'number' && formData.freightValue !== 0 
-                       ? formData.freightValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                       : formData.freightValue === '' ? '' : ''}
-                     onChange={(e) => {
-                       const value = e.target.value;
-                       if (value === '') {
-                         handleChange('freightValue', '');
-                       } else {
-                         const numericValue = value.replace(/\./g, '').replace(',', '.');
-                         const parsed = parseFloat(numericValue);
-                         if (!isNaN(parsed)) {
-                           handleChange('freightValue', parsed);
-                         } else if (value.match(/^[\d,\.]*$/)) {
-                           // Permite continuar digitando números incompletos
-                           handleChange('freightValue', value);
-                         }
-                       }
-                     }}
-                     placeholder="0,00"
-                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                   />
+                    type="text"
+                    value={localInvoiceValue}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow only digits, comma, and dot
+                      if (value === '' || /^[\d,.]*$/.test(value)) {
+                        setLocalInvoiceValue(value);
+                      }
+                    }}
+                    onBlur={() => {
+                      const cleanValue = localInvoiceValue.replace(/\./g, '').replace(',', '.');
+                      const parsed = parseFloat(cleanValue);
+                      const numericValue = isNaN(parsed) ? 0 : parsed;
+                      handleChange('invoiceValue', numericValue);
+                      
+                      // Re-format the display value
+                      if (numericValue === 0) {
+                        setLocalInvoiceValue('');
+                      } else {
+                        setLocalInvoiceValue(numericValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                      }
+                    }}
+                    placeholder="0,00"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
 
                 <div>
@@ -689,10 +712,28 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                         Valor do Frete (R$)
                       </label>
                       <input
-                        type="number"
-                        step="0.01"
-                        value={formData.freightValue}
-                        onChange={(e) => handleChange('freightValue', e.target.value === '' ? '' : parseFloat(e.target.value) || '')}
+                        type="text"
+                        value={localFreightValue}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Allow only digits, comma, and dot
+                          if (value === '' || /^[\d,.]*$/.test(value)) {
+                            setLocalFreightValue(value);
+                          }
+                        }}
+                        onBlur={() => {
+                          const cleanValue = localFreightValue.replace(/\./g, '').replace(',', '.');
+                          const parsed = parseFloat(cleanValue);
+                          const numericValue = isNaN(parsed) ? 0 : parsed;
+                          handleChange('freightValue', numericValue);
+                          
+                          // Re-format the display value
+                          if (numericValue === 0) {
+                            setLocalFreightValue('');
+                          } else {
+                            setLocalFreightValue(numericValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                          }
+                        }}
                         placeholder="0,00"
                         className="w-full px-3 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                       />
