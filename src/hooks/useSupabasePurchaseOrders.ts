@@ -356,9 +356,20 @@ export function useSupabasePurchaseOrders() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    console.log('getMetrics - Total de itens:', items.length);
+    console.log('getMetrics - Itens:', items.map(item => ({ 
+      id: item.id, 
+      status: item.status, 
+      quantidade: item.quantidade, 
+      valorUnitario: item.valorUnitario,
+      dataEntrega: item.dataEntrega 
+    })));
+
     const activeItems = items.filter(item =>
       item.status !== 'Entregue' && item.status !== 'Cancelado'
     );
+
+    console.log('getMetrics - Itens ativos:', activeItems.length);
 
     const delayedDeliveries = activeItems.filter(item => {
       if (!item.dataEntrega) return false;
@@ -381,10 +392,11 @@ export function useSupabasePurchaseOrders() {
       const unitValue = typeof item.valorUnitario === 'number' ? item.valorUnitario : 0;
       const quantity = typeof item.quantidade === 'number' ? item.quantidade : 0;
       const itemTotal = unitValue * quantity;
+      console.log(`getMetrics - Item ${item.id}: ${unitValue} x ${quantity} = ${itemTotal}`);
       return sum + itemTotal;
     }, 0);
 
-    return {
+    const metrics = {
       totalItems: items.length,
       pendingDelivery: items.filter(item => item.status === 'Pedido' || item.status === 'Em Trânsito' || item.status === 'Aguardando Fornecedor').length,
       partiallyDelivered: items.filter(item => item.status === 'Parcialmente Entregue').length,
@@ -393,6 +405,10 @@ export function useSupabasePurchaseOrders() {
       delayedDeliveries,
       upcomingDeliveries
     };
+
+    console.log('getMetrics - Métricas calculadas:', metrics);
+
+    return metrics;
   };
 
   const getUniqueValues = () => {

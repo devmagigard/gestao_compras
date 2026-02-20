@@ -579,18 +579,6 @@ function App() {
                 />
               ) : (
                 <div className="space-y-6">
-                  {/* Debug: Mostrar métricas para verificar valores */}
-                  {process.env.NODE_ENV === 'development' && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <h4 className="font-medium text-yellow-800 mb-2">Debug - Métricas dos Produtos:</h4>
-                      <pre className="text-xs text-yellow-700">
-                        {JSON.stringify(productMetrics, null, 2)}
-                      </pre>
-                      <p className="text-xs text-yellow-600 mt-2">
-                        Total de itens carregados: {filteredPurchaseOrderItems.length}
-                      </p>
-                    </div>
-                  )}
                   <ProductMetricsCards metrics={productMetrics} isDarkMode={isDarkMode} />
                   <PurchaseOrderItemsTable
                     items={filteredPurchaseOrderItems}
