@@ -10,13 +10,15 @@ interface ProductMetricsCardsProps {
 
 export function ProductMetricsCards({ metrics, isDarkMode = false }: ProductMetricsCardsProps) {
   const formatCurrency = (value: number) => {
-    return `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    // Garantir que value é um número válido
+    const numericValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+    return `R$ ${numericValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const cards = [
     {
       title: 'Total de Produtos',
-      value: metrics.totalItems,
+      value: metrics.totalItems || 0,
       icon: Package,
       color: 'blue',
       bgColor: isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50',
@@ -25,7 +27,7 @@ export function ProductMetricsCards({ metrics, isDarkMode = false }: ProductMetr
     },
     {
       title: 'Aguardando Entrega',
-      value: metrics.pendingDelivery,
+      value: metrics.pendingDelivery || 0,
       icon: Clock,
       color: 'yellow',
       bgColor: isDarkMode ? 'bg-yellow-900/20' : 'bg-yellow-50',
@@ -34,7 +36,7 @@ export function ProductMetricsCards({ metrics, isDarkMode = false }: ProductMetr
     },
     {
       title: 'Parcialmente Entregue',
-      value: metrics.partiallyDelivered,
+      value: metrics.partiallyDelivered || 0,
       icon: TrendingUp,
       color: 'orange',
       bgColor: isDarkMode ? 'bg-orange-900/20' : 'bg-orange-50',
@@ -43,7 +45,7 @@ export function ProductMetricsCards({ metrics, isDarkMode = false }: ProductMetr
     },
     {
       title: 'Entregues',
-      value: metrics.completed,
+      value: metrics.completed || 0,
       icon: CheckCircle,
       color: 'green',
       bgColor: isDarkMode ? 'bg-green-900/20' : 'bg-green-50',
@@ -62,17 +64,17 @@ export function ProductMetricsCards({ metrics, isDarkMode = false }: ProductMetr
     },
     {
       title: 'Entregas Atrasadas',
-      value: metrics.delayedDeliveries,
+      value: metrics.delayedDeliveries || 0,
       icon: AlertTriangle,
       color: 'red',
       bgColor: isDarkMode ? 'bg-red-900/20' : 'bg-red-50',
       iconColor: 'text-red-600',
       borderColor: 'border-red-200',
-      alert: metrics.delayedDeliveries > 0
+      alert: (metrics.delayedDeliveries || 0) > 0
     },
     {
       title: 'Entregas Próximas',
-      value: metrics.upcomingDeliveries,
+      value: metrics.upcomingDeliveries || 0,
       subtitle: 'Próximos 5 dias',
       icon: Clock,
       color: 'amber',

@@ -376,8 +376,11 @@ export function useSupabasePurchaseOrders() {
       return deliveryDate >= today && deliveryDate <= fiveDaysFromNow;
     }).length;
 
+    // Calcular valor total considerando apenas valores válidos
     const totalValue = items.reduce((sum, item) => {
-      const itemTotal = item.valorUnitario * item.quantidade;
+      const unitValue = typeof item.valorUnitario === 'number' ? item.valorUnitario : 0;
+      const quantity = typeof item.quantidade === 'number' ? item.quantidade : 0;
+      const itemTotal = unitValue * quantity;
       return sum + itemTotal;
     }, 0);
 
