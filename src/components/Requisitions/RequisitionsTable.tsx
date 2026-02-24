@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Requisition } from '../../types';
-import { Edit, Trash2, Package, User, Calendar, DollarSign, Eye, AlertCircle, CalendarClock, ShoppingCart } from 'lucide-react';
+import { CreditCard as Edit, Trash2, Package, User, Calendar, DollarSign, Eye, AlertCircle, CalendarClock, ShoppingCart } from 'lucide-react';
 import { STATUS_COLORS, CRITICALITY_COLORS, REQUISITION_STATUSES, CRITICALITY_LEVELS } from '../../utils/constants';
 import { EditableCell } from './EditableCell';
 import { Tooltip } from '../UI/Tooltip';
