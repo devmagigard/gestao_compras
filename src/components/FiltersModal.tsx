@@ -42,6 +42,7 @@ export function FiltersModal({
     const clearedFilters: FilterState = {
       rcSearch: '',
       projectSearch: '',
+      productSearch: '',
       statusSearch: '',
       freightFilter: 'all',
       attentionFilter: 'all'
@@ -57,7 +58,7 @@ export function FiltersModal({
 
   // Contar filtros ativos (excluindo rcSearch que fica sempre visível)
   const activeFiltersCount = Object.entries(localFilters).filter(([key, value]) => {
-    if (key === 'rcSearch' || key === 'projectSearch') return false;
+    if (key === 'rcSearch' || key === 'projectSearch' || key === 'productSearch') return false;
     if (key === 'freightFilter' || key === 'attentionFilter') {
       return value !== 'all';
     }

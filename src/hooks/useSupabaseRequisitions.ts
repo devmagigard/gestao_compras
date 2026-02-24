@@ -167,13 +167,60 @@ export function useSupabaseRequisitions() {
   const [error, setError] = useState<string | null>(null);
 
   // Carregar requisições do Supabase
-  const loadRequisitions = async () => {
+  const loadRequisitions = async (filters?: FilterState) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      let query = supabase
         .from('requisitions')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+      
+      // Aplicar filtros se fornecidos
+      if (filters) {
+        if (filters.rcSearch) {
+          query = query.ilike('rc', `%${filters.rcSearch}%`);
+        }
+        
+        if (filters.projectSearch) {
+          query = query.or(`project.ilike.%${filters.projectSearch}%,item.ilike.%${filters.projectSearch}%`);
+        }
+        
+        if (filters.statusSearch) {
+          query = query.eq('status', filters.statusSearch);
+        }
+        
+        if (filters.freightFilter && filters.freightFilter !== 'all') {
+          if (filters.freightFilter === 'with') {
+            query = query.eq('freight', true);
+          } else if (filters.freightFilter === 'without') {
+            query = query.eq('freight', false);
+          }
+        }
+        
+        // Busca por produtos - buscar requisições que têm produtos com a descrição
+        if (filters.productSearch) {
+          // Primeiro, buscar IDs de requisições que têm produtos com a descrição
+          const { data: productData, error: productError } = await supabase
+            .from('purchase_order_items')
+            .select('requisition_id')
+            .ilike('descricao_item', `%${filters.productSearch}%`);
+          
+          if (productError) throw productError;
+          
+          const requisitionIds = [...new Set(productData?.map(item => item.requisition_id).filter(Boolean))];
+          
+          if (requisitionIds.length > 0) {
+            query = query.in('id', requisitionIds);
+          } else {
+            // Se não encontrou produtos, retornar array vazio
+            setRequisitions([]);
+            setFilteredRequisitions([]);
+            return;
+          }
+        }
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
 
@@ -183,7 +230,13 @@ export function useSupabaseRequisitions() {
       const sorted = sortByNumberDescending(convertedData, 'rc');
 
       setRequisitions(sorted);
-      setFilteredRequisitions(sorted);
+      
+      // Aplicar filtros de atenção no lado do cliente
+      if (filters) {
+        applyAttentionFilters(sorted, filters);
+      } else {
+        setFilteredRequisitions(sorted);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar requisições');
       console.error('Erro ao carregar requisições:', err);
@@ -192,6 +245,46 @@ export function useSupabaseRequisitions() {
     }
   };
 
+  // Função para aplicar filtros de atenção no lado do cliente
+  const applyAttentionFilters = (requisitions: Requisition[], filters: FilterState) => {
+    let filtered = requisitions;
+    
+    // Filtro de atenção para entregas
+    if (filters.attentionFilter && filters.attentionFilter !== 'all') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      filtered = filtered.filter(req => {
+        // Pular se não tem previsão de entrega
+        if (!req.deliveryForecast) return false;
+        
+        // Pular se já está concluído ou entregue
+        if (req.status === 'Concluído' || req.status === 'Entregue') return false;
+        
+        const deliveryDate = createLocalDate(req.deliveryForecast);
+        deliveryDate.setHours(0, 0, 0, 0);
+        
+        const isDelayed = deliveryDate < today;
+        
+        const fiveDaysFromNow = new Date(today);
+        fiveDaysFromNow.setDate(today.getDate() + 5);
+        const isUpcoming = deliveryDate >= today && deliveryDate <= fiveDaysFromNow;
+        
+        switch (filters.attentionFilter) {
+          case 'delayed':
+            return isDelayed;
+          case 'upcoming':
+            return isUpcoming && !isDelayed;
+          case 'attention':
+            return isDelayed || isUpcoming;
+          default:
+            return true;
+        }
+      });
+    }
+    
+    setFilteredRequisitions(filtered);
+  };
   // Adicionar nova requisição
   const addRequisition = async (requisition: Omit<Requisition, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
@@ -375,75 +468,8 @@ export function useSupabaseRequisitions() {
   const filterRequisitions = (filters: FilterState) => {
     // Atualizar os filtros ativos
     setCurrentActiveFilters(filters);
-    
-    let filtered = requisitions;
-
-    if (filters.rcSearch) {
-      const searchLower = filters.rcSearch.toLowerCase();
-      filtered = filtered.filter(req =>
-        req.rc.toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (filters.projectSearch) {
-      const searchLower = filters.projectSearch.toLowerCase();
-      filtered = filtered.filter(req =>
-        req.project.toLowerCase().includes(searchLower) ||
-        req.item.toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (filters.statusSearch) {
-      filtered = filtered.filter(req => req.status === filters.statusSearch);
-    }
-
-    // Filtro de frete
-    if (filters.freightFilter && filters.freightFilter !== 'all') {
-      if (filters.freightFilter === 'with') {
-        filtered = filtered.filter(req => req.freight === true);
-      } else if (filters.freightFilter === 'without') {
-        filtered = filtered.filter(req => req.freight === false);
-      }
-    }
-
-    // Filtro de atenção para entregas
-    if (filters.attentionFilter && filters.attentionFilter !== 'all') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      filtered = filtered.filter(req => {
-        // Pular se não tem previsão de entrega
-        if (!req.deliveryForecast) return false;
-        
-        // Pular se já está concluído ou entregue
-        if (req.status === 'Concluído' || req.status === 'Entregue') return false;
-        
-        const deliveryDate = createLocalDate(req.deliveryForecast);
-        deliveryDate.setHours(0, 0, 0, 0);
-        
-        const isDelayed = deliveryDate < today;
-        
-        const fiveDaysFromNow = new Date(today);
-        fiveDaysFromNow.setDate(today.getDate() + 5);
-        const isUpcoming = deliveryDate >= today && deliveryDate <= fiveDaysFromNow;
-        
-        switch (filters.attentionFilter) {
-          case 'delayed':
-            return isDelayed;
-          case 'upcoming':
-            return isUpcoming && !isDelayed;
-          case 'attention':
-            return isDelayed || isUpcoming;
-          default:
-            return true;
-        }
-      });
-    }
-
-    // Manter ordenação por RC após filtrar (números maiores primeiro)
-    filtered = sortByNumberDescending(filtered, 'rc');
-
-    setFilteredRequisitions(filtered);
+    // Recarregar dados com os novos filtros
+    loadRequisitions(filters);
   };
 
   // Métricas do dashboard
@@ -525,11 +551,35 @@ export function useSupabaseRequisitions() {
 
   // Recarregar filtros quando requisições mudarem
   useEffect(() => {
-    // Reaplicar os filtros ativos sempre que as requisições mudarem
-    filterRequisitions(currentActiveFilters);
+    // Reaplicar os filtros ativos sempre que as requisições mudarem (apenas se não há filtros ativos)
+    const hasActiveFilters = Object.entries(currentActiveFilters).some(([key, value]) => {
+      if (key === 'freightFilter' || key === 'attentionFilter') {
+        return value !== 'all';
+      }
+      return value !== '';
+    });
+    
+    if (!hasActiveFilters) {
+      // Recalcular entregas próximas
+      calculateUpcomingDeliveries();
+    }
+  }, [requisitions]);
+  
+  // Recarregar dados quando filtros mudarem
+  useEffect(() => {
+    const hasActiveFilters = Object.entries(currentActiveFilters).some(([key, value]) => {
+      if (key === 'freightFilter' || key === 'attentionFilter') {
+        return value !== 'all';
+      }
+      return value !== '';
+    });
+    
+    if (hasActiveFilters) {
+      loadRequisitions(currentActiveFilters);
+    }
     // Recalcular entregas próximas
     calculateUpcomingDeliveries();
-  }, [requisitions, currentActiveFilters]);
+  }, [currentActiveFilters]);
 
   return {
     requisitions,
