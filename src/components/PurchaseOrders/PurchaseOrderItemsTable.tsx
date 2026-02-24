@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PurchaseOrderItem } from '../../types';
-import { CreditCard as Edit, Trash2, Package, Eye, AlertCircle, CalendarClock } from 'lucide-react';
+import { Edit, Trash2, Package, Eye, AlertCircle, CalendarClock } from 'lucide-react';
 import { PO_STATUS_COLORS, PURCHASE_ORDER_STATUSES, CURRENCIES, CURRENCY_SYMBOLS } from '../../utils/constants';
 import { EditableCell } from '../Requisitions/EditableCell';
 import { Tooltip } from '../UI/Tooltip';
