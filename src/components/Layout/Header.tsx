@@ -59,19 +59,6 @@ export function Header({ onNewRequisition, onImport, onExportCSV, onExportExcel,
 
           <div className="flex items-center space-x-2 lg:space-x-3 flex-shrink-0">
             <button
-              onClick={handleClearAll}
-              disabled={isClearing}
-              className={`p-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isDarkMode
-                  ? 'text-gray-500 hover:text-red-400 hover:bg-gray-800 border border-transparent hover:border-gray-700'
-                  : 'text-gray-400 hover:text-red-600 hover:bg-gray-50 border border-transparent hover:border-gray-200'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed`}
-              title="Apagar todos os dados"
-            >
-              <Trash2 className={`h-4 w-4 ${isClearing ? 'animate-pulse' : ''}`} />
-            </button>
-
-            <button
               onClick={onToggleTheme}
               className={`p-2 lg:px-3 lg:py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isDarkMode
