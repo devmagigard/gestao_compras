@@ -91,6 +91,7 @@ function App() {
   const [filters, setFilters] = useState<FilterState>({
     rcSearch: '',
     projectSearch: '',
+    productSearch: '',
     statusSearch: '',
     freightFilter: 'all',
     attentionFilter: 'all'
@@ -527,6 +528,21 @@ function App() {
                   </datalist>
                 </div>
                 
+                <div className="relative">
+                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
+                  <input
+                    type="text"
+                    placeholder="Buscar produto..."
+                    value={filters.productSearch}
+                    onChange={(e) => handleFiltersChange({ ...filters, productSearch: e.target.value })}
+                    className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 transition-all duration-200 ${
+                      isDarkMode 
+                        ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                  />
+                </div>
+                
                 {/* Botão de Filtros Avançados */}
                 <button
                   onClick={() => setFiltersModalOpen(true)}
@@ -541,7 +557,7 @@ function App() {
                   {/* Indicador de filtros ativos */}
                   {(() => {
                     const activeCount = Object.entries(filters).filter(([key, value]) => {
-                      if (key === 'rcSearch' || key === 'projectSearch') return false;
+                      if (key === 'rcSearch' || key === 'projectSearch' || key === 'productSearch') return false;
                       if (key === 'freightFilter' || key === 'attentionFilter') {
                         return value !== 'all';
                       }
