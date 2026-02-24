@@ -452,7 +452,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                     </label>
                     <DateInput
                       value={formData.quotationInclusion}
-                      onChange={(e) => handleChange('quotationInclusion', e.target.value)}
+                      onChange={(value) => handleChange('quotationInclusion', value)}
                       className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <p className="text-xs text-blue-600 mt-1">
@@ -481,7 +481,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                     </label>
                     <DateInput
                       value={formData.deliveryForecast}
-                      onChange={(e) => handleChange('deliveryForecast', e.target.value)}
+                      onChange={(value) => handleChange('deliveryForecast', value)}
                       className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <p className="text-xs text-blue-600 mt-1">
@@ -506,7 +506,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                   </label>
                   <DateInput
                     value={formData.updateDate}
-                    onChange={(e) => handleChange('updateDate', e.target.value)}
+                    onChange={(value) => handleChange('updateDate', value)}
                     className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <p className="text-xs text-gray-500 mt-1">
@@ -520,7 +520,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                   </label>
                   <DateInput
                     value={formData.omieInclusion}
-                    onChange={(e) => handleChange('omieInclusion', e.target.value)}
+                    onChange={(value) => handleChange('omieInclusion', value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -531,7 +531,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                   </label>
                   <DateInput
                     value={formData.sentForApproval}
-                    onChange={(e) => handleChange('sentForApproval', e.target.value)}
+                    onChange={(value) => handleChange('sentForApproval', value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -542,7 +542,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                   </label>
                   <DateInput
                     value={formData.omieApproval}
-                    onChange={(e) => handleChange('omieApproval', e.target.value)}
+                    onChange={(value) => handleChange('omieApproval', value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -556,7 +556,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                   </label>
                   <DateInput
                     value={formData.poSent}
-                    onChange={(e) => handleChange('poSent', e.target.value)}
+                    onChange={(value) => handleChange('poSent', value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -652,7 +652,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                       </label>
                       <DateInput
                         value={formData.dueDate1}
-                        onChange={(e) => handleChange('dueDate1', e.target.value)}
+                        onChange={(value) => handleChange('dueDate1', value)}
                         className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -663,7 +663,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                       </label>
                       <DateInput
                         value={formData.dueDate2}
-                        onChange={(e) => handleChange('dueDate2', e.target.value)}
+                        onChange={(value) => handleChange('dueDate2', value)}
                         className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -674,7 +674,7 @@ export function RequisitionForm({ isOpen, onClose, onSave, requisition, uniqueVa
                       </label>
                       <DateInput
                         value={formData.dueDate3}
-                        onChange={(e) => handleChange('dueDate3', e.target.value)}
+                        onChange={(value) => handleChange('dueDate3', value)}
                         className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>

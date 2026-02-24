@@ -44,19 +44,26 @@ export function RequisitionsTable({
       const requisitionIds = requisitions.map(r => r.id);
       if (requisitionIds.length === 0) return;
 
-      const { data, error } = await supabase
-        .from('purchase_order_items')
-        .select('requisition_id')
-        .in('requisition_id', requisitionIds);
-
-      if (error) throw error;
-
       const counts: Record<string, number> = {};
-      data?.forEach((item: any) => {
-        if (item.requisition_id) {
-          counts[item.requisition_id] = (counts[item.requisition_id] || 0) + 1;
-        }
-      });
+      
+      // Process in batches to avoid URL length limits
+      const batchSize = 50;
+      for (let i = 0; i < requisitionIds.length; i += batchSize) {
+        const batch = requisitionIds.slice(i, i + batchSize);
+        
+        const { data, error } = await supabase
+          .from('purchase_order_items')
+          .select('requisition_id')
+          .in('requisition_id', batch);
+
+        if (error) throw error;
+
+        data?.forEach((item: any) => {
+          if (item.requisition_id) {
+            counts[item.requisition_id] = (counts[item.requisition_id] || 0) + 1;
+          }
+        });
+      }
 
       setProductCounts(counts);
     } catch (err) {
