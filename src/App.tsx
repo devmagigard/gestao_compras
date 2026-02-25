@@ -46,22 +46,6 @@ function useTheme() {
   return { isDarkMode, toggleTheme };
 }
 
-// Hook para debounce
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
 function App() {
   const { isDarkMode, toggleTheme } = useTheme();
   const {
@@ -113,29 +97,6 @@ function App() {
     attentionFilter: 'all'
   });
 
-  // Estados separados para os campos de busca (para evitar delay na digitação)
-  const [searchInputs, setSearchInputs] = useState({
-    rcSearch: '',
-    projectSearch: '',
-    productSearch: ''
-  });
-
-  // Debounce para as buscas
-  const debouncedRcSearch = useDebounce(searchInputs.rcSearch, 500);
-  const debouncedProjectSearch = useDebounce(searchInputs.projectSearch, 500);
-  const debouncedProductSearch = useDebounce(searchInputs.productSearch, 500);
-
-  // Aplicar filtros quando os valores debounced mudarem
-  useEffect(() => {
-    const newFilters = {
-      ...filters,
-      rcSearch: debouncedRcSearch,
-      projectSearch: debouncedProjectSearch,
-      productSearch: debouncedProductSearch
-    };
-    setFilters(newFilters);
-    filterRequisitions(newFilters);
-  }, [debouncedRcSearch, debouncedProjectSearch, debouncedProductSearch]);
   const [productFormOpen, setProductFormOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<PurchaseOrderItem | null>(null);
   const [productDetailModalOpen, setProductDetailModalOpen] = useState(false);
@@ -175,16 +136,18 @@ function App() {
     // Atualizar apenas os filtros que não são de busca por texto
     const updatedFilters = {
       ...newFilters,
-      rcSearch: searchInputs.rcSearch,
-      projectSearch: searchInputs.projectSearch,
-      productDescriptionSearch: searchInputs.productDescriptionSearch
+      rcSearch: filters.rcSearch,
+      projectSearch: filters.projectSearch,
+      productSearch: filters.productSearch
     };
     setFilters(updatedFilters);
     filterRequisitions(updatedFilters);
   };
 
-  const handleSearchInputChange = (field: keyof typeof searchInputs, value: string) => {
-    setSearchInputs(prev => ({ ...prev, [field]: value }));
+  const handleSearchChange = (field: keyof FilterState, value: string) => {
+    const newFilters = { ...filters, [field]: value };
+    setFilters(newFilters);
+    filterRequisitions(newFilters);
   };
 
   const handleNewRequisition = () => {
@@ -547,8 +510,8 @@ function App() {
                   <input
                     type="text"
                     placeholder="Buscar por RC..."
-                    value={searchInputs.rcSearch}
-                    onChange={(e) => handleSearchInputChange('rcSearch', e.target.value)}
+                    value={filters.rcSearch}
+                    onChange={(e) => handleSearchChange('rcSearch', e.target.value)}
                     className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-48 transition-all duration-200 ${
                       isDarkMode 
                         ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
@@ -562,8 +525,8 @@ function App() {
                   <input
                     type="text"
                     placeholder="Buscar projeto ou item..."
-                    value={searchInputs.projectSearch}
-                    onChange={(e) => handleSearchInputChange('projectSearch', e.target.value)}
+                    value={filters.projectSearch}
+                    onChange={(e) => handleSearchChange('projectSearch', e.target.value)}
                     list="projects-main"
                     className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 transition-all duration-200 ${
                       isDarkMode 
@@ -583,8 +546,8 @@ function App() {
                   <input
                     type="text"
                     placeholder="Buscar produto..."
-                    value={searchInputs.productSearch}
-                    onChange={(e) => handleSearchInputChange('productSearch', e.target.value)}
+                    value={filters.productSearch}
+                    onChange={(e) => handleSearchChange('productSearch', e.target.value)}
                     className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 transition-all duration-200 ${
                       isDarkMode 
                         ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
