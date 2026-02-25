@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { Requisition, FilterState, DashboardMetrics } from '../types';
 import { normalizeProjectName } from '../utils/formatters';
@@ -156,7 +156,6 @@ function sortByNumberDescending<T extends { rc?: string; numeroPo?: string }>(
 
 export function useSupabaseRequisitions() {
   const [requisitions, setRequisitions] = useState<Requisition[]>([]);
-  const [filteredRequisitions, setFilteredRequisitions] = useState<Requisition[]>([]);
   const [upcomingDeliveries, setUpcomingDeliveries] = useState<Requisition[]>([]);
   const [currentActiveFilters, setCurrentActiveFilters] = useState<FilterState>({
     rcSearch: '',
@@ -231,13 +230,6 @@ export function useSupabaseRequisitions() {
       const sorted = sortByNumberDescending(convertedData, 'rc');
 
       setRequisitions(sorted);
-      
-      // Aplicar filtros de atenção no lado do cliente
-      if (filters) {
-        applyAttentionFilters(sorted, filters);
-      } else {
-        setFilteredRequisitions(sorted);
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar requisições');
       console.error('Erro ao carregar requisições:', err);
@@ -246,46 +238,6 @@ export function useSupabaseRequisitions() {
     }
   };
 
-  // Função para aplicar filtros de atenção no lado do cliente
-  const applyAttentionFilters = (requisitions: Requisition[], filters: FilterState) => {
-    let filtered = requisitions;
-    
-    // Filtro de atenção para entregas
-    if (filters.attentionFilter && filters.attentionFilter !== 'all') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      filtered = filtered.filter(req => {
-        // Pular se não tem previsão de entrega
-        if (!req.deliveryForecast) return false;
-        
-        // Pular se já está concluído ou entregue
-        if (req.status === 'Concluído' || req.status === 'Entregue') return false;
-        
-        const deliveryDate = createLocalDate(req.deliveryForecast);
-        deliveryDate.setHours(0, 0, 0, 0);
-        
-        const isDelayed = deliveryDate < today;
-        
-        const fiveDaysFromNow = new Date(today);
-        fiveDaysFromNow.setDate(today.getDate() + 5);
-        const isUpcoming = deliveryDate >= today && deliveryDate <= fiveDaysFromNow;
-        
-        switch (filters.attentionFilter) {
-          case 'delayed':
-            return isDelayed;
-          case 'upcoming':
-            return isUpcoming && !isDelayed;
-          case 'attention':
-            return isDelayed || isUpcoming;
-          default:
-            return true;
-        }
-      });
-    }
-    
-    setFilteredRequisitions(filtered);
-  };
   // Adicionar nova requisição
   const addRequisition = async (requisition: Omit<Requisition, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
@@ -302,11 +254,6 @@ export function useSupabaseRequisitions() {
 
       // Adicionar e reordenar
       setRequisitions(prev => {
-        const updated = [newRequisition, ...prev];
-        return sortByNumberDescending(updated, 'rc');
-      });
-
-      setFilteredRequisitions(prev => {
         const updated = [newRequisition, ...prev];
         return sortByNumberDescending(updated, 'rc');
       });
@@ -394,11 +341,6 @@ export function useSupabaseRequisitions() {
         const updated = prev.map(req => req.id === id ? updatedRequisition : req);
         return sortByNumberDescending(updated, 'rc');
       });
-
-      setFilteredRequisitions(prev => {
-        const updated = prev.map(req => req.id === id ? updatedRequisition : req);
-        return sortByNumberDescending(updated, 'rc');
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao atualizar requisição');
       console.error('Erro ao atualizar requisição:', err);
@@ -416,7 +358,6 @@ export function useSupabaseRequisitions() {
       if (error) throw error;
 
       setRequisitions(prev => prev.filter(req => req.id !== id));
-      setFilteredRequisitions(prev => prev.filter(req => req.id !== id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao deletar requisição');
       console.error('Erro ao deletar requisição:', err);
@@ -465,80 +406,8 @@ export function useSupabaseRequisitions() {
     }
   };
 
-  // Filtrar requisições
   const filterRequisitions = (filters: FilterState) => {
     setCurrentActiveFilters(filters);
-    
-    let filtered = requisitions;
-
-    if (filters.rcSearch) {
-      const searchLower = filters.rcSearch.toLowerCase();
-      filtered = filtered.filter(req =>
-        req.rc.toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (filters.projectSearch) {
-      const searchLower = filters.projectSearch.toLowerCase();
-      filtered = filtered.filter(req =>
-        req.project.toLowerCase().includes(searchLower) ||
-        req.item.toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (filters.statusSearch) {
-      filtered = filtered.filter(req => req.status === filters.statusSearch);
-    }
-
-    if (filters.freightFilter && filters.freightFilter !== 'all') {
-      if (filters.freightFilter === 'with') {
-        filtered = filtered.filter(req => req.freight === true);
-      } else if (filters.freightFilter === 'without') {
-        filtered = filtered.filter(req => req.freight === false);
-      }
-    }
-
-    // Filtro de atenção para entregas
-    if (filters.attentionFilter && filters.attentionFilter !== 'all') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      filtered = filtered.filter(req => {
-        if (!req.deliveryForecast) return false;
-        if (req.status === 'Concluído' || req.status === 'Entregue') return false;
-        
-        const deliveryDate = createLocalDate(req.deliveryForecast);
-        deliveryDate.setHours(0, 0, 0, 0);
-        
-        const isDelayed = deliveryDate < today;
-        const fiveDaysFromNow = new Date(today);
-        fiveDaysFromNow.setDate(today.getDate() + 5);
-        const isUpcoming = deliveryDate >= today && deliveryDate <= fiveDaysFromNow;
-        
-        switch (filters.attentionFilter) {
-          case 'delayed':
-            return isDelayed;
-          case 'upcoming':
-            return isUpcoming && !isDelayed;
-          case 'attention':
-            return isDelayed || isUpcoming;
-          default:
-            return true;
-        }
-      });
-    }
-
-    // Busca por produtos - filtrar no lado do cliente por enquanto
-    if (filters.productSearch) {
-      // Para busca por produtos, vamos filtrar localmente por enquanto
-      // TODO: Implementar busca no banco quando necessário para performance
-      const searchLower = filters.productSearch.toLowerCase();
-      filtered = filtered.filter(req =>
-        req.item.toLowerCase().includes(searchLower)
-      );
-    }
-
-    setFilteredRequisitions(filtered);
   };
 
   // Métricas do dashboard
@@ -618,37 +487,78 @@ export function useSupabaseRequisitions() {
     loadRequisitions();
   }, []);
 
-  // Recarregar filtros quando requisições mudarem
   useEffect(() => {
-    // Reaplicar os filtros ativos sempre que as requisições mudarem (apenas se não há filtros ativos)
-    const hasActiveFilters = Object.entries(currentActiveFilters).some(([key, value]) => {
-      if (key === 'freightFilter' || key === 'attentionFilter') {
-        return value !== 'all';
-      }
-      return value !== '';
-    });
-    
-    if (!hasActiveFilters) {
-      // Recalcular entregas próximas
-      calculateUpcomingDeliveries();
-    }
-  }, [requisitions]);
-  
-  // Recarregar dados quando filtros mudarem
-  useEffect(() => {
-    const hasActiveFilters = Object.entries(currentActiveFilters).some(([key, value]) => {
-      if (key === 'freightFilter' || key === 'attentionFilter') {
-        return value !== 'all';
-      }
-      return value !== '';
-    });
-    
-    if (hasActiveFilters) {
-      loadRequisitions(currentActiveFilters);
-    }
-    // Recalcular entregas próximas
     calculateUpcomingDeliveries();
-  }, [currentActiveFilters]);
+  }, [requisitions]);
+
+  const filteredRequisitions = useMemo(() => {
+    let filtered = requisitions;
+
+    if (currentActiveFilters.rcSearch) {
+      const searchLower = currentActiveFilters.rcSearch.toLowerCase();
+      filtered = filtered.filter(req =>
+        req.rc.toLowerCase().includes(searchLower)
+      );
+    }
+
+    if (currentActiveFilters.projectSearch) {
+      const searchLower = currentActiveFilters.projectSearch.toLowerCase();
+      filtered = filtered.filter(req =>
+        req.project.toLowerCase().includes(searchLower) ||
+        req.item.toLowerCase().includes(searchLower)
+      );
+    }
+
+    if (currentActiveFilters.statusSearch) {
+      filtered = filtered.filter(req => req.status === currentActiveFilters.statusSearch);
+    }
+
+    if (currentActiveFilters.freightFilter && currentActiveFilters.freightFilter !== 'all') {
+      if (currentActiveFilters.freightFilter === 'with') {
+        filtered = filtered.filter(req => req.freight === true);
+      } else if (currentActiveFilters.freightFilter === 'without') {
+        filtered = filtered.filter(req => req.freight === false);
+      }
+    }
+
+    if (currentActiveFilters.attentionFilter && currentActiveFilters.attentionFilter !== 'all') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      filtered = filtered.filter(req => {
+        if (!req.deliveryForecast) return false;
+        if (req.status === 'Concluído' || req.status === 'Entregue') return false;
+
+        const deliveryDate = createLocalDate(req.deliveryForecast);
+        deliveryDate.setHours(0, 0, 0, 0);
+
+        const isDelayed = deliveryDate < today;
+        const fiveDaysFromNow = new Date(today);
+        fiveDaysFromNow.setDate(today.getDate() + 5);
+        const isUpcoming = deliveryDate >= today && deliveryDate <= fiveDaysFromNow;
+
+        switch (currentActiveFilters.attentionFilter) {
+          case 'delayed':
+            return isDelayed;
+          case 'upcoming':
+            return isUpcoming && !isDelayed;
+          case 'attention':
+            return isDelayed || isUpcoming;
+          default:
+            return true;
+        }
+      });
+    }
+
+    if (currentActiveFilters.productSearch) {
+      const searchLower = currentActiveFilters.productSearch.toLowerCase();
+      filtered = filtered.filter(req =>
+        req.item.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return filtered;
+  }, [requisitions, currentActiveFilters]);
 
   return {
     requisitions,
