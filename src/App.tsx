@@ -16,6 +16,7 @@ import { ProductMetricsCards } from './components/PurchaseOrders/ProductMetricsC
 import { BulkImportProductsModal } from './components/PurchaseOrders/BulkImportProductsModal';
 import { useSupabaseRequisitions } from './hooks/useSupabaseRequisitions';
 import { useSupabasePurchaseOrders } from './hooks/useSupabasePurchaseOrders';
+import { useDebounce } from './hooks/useDebounce';
 import { FilterState, Requisition, RequisitionStatus, PurchaseOrderItem, PurchaseOrderFilterState } from './types';
 import { REQUISITION_STATUSES } from './utils/constants';
 import { parseCSVData } from './utils/csvParser';
@@ -132,10 +133,21 @@ function App() {
     }
   }, [loading]);
 
-  // Aplicar filtros quando mudarem
+  // Debounce dos valores de busca
+  const debouncedRcSearch = useDebounce(filters.rcSearch, 400);
+  const debouncedProjectSearch = useDebounce(filters.projectSearch, 400);
+  const debouncedProductSearch = useDebounce(filters.productSearch, 400);
+
+  // Aplicar filtros quando os valores debounced mudarem
   useEffect(() => {
-    filterRequisitions(filters);
-  }, [filters]);
+    const debouncedFilters = {
+      ...filters,
+      rcSearch: debouncedRcSearch,
+      projectSearch: debouncedProjectSearch,
+      productSearch: debouncedProductSearch
+    };
+    filterRequisitions(debouncedFilters);
+  }, [debouncedRcSearch, debouncedProjectSearch, debouncedProductSearch, filters.statusSearch, filters.freightFilter, filters.attentionFilter]);
 
   const handleFiltersChange = (newFilters: FilterState) => {
     // Atualizar apenas os filtros que não são de busca por texto
