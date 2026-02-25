@@ -89,6 +89,14 @@ function App() {
   const [selectedRequisitionForDetail, setSelectedRequisitionForDetail] = useState<Requisition | null>(null);
   const [productsModalOpen, setProductsModalOpen] = useState(false);
   const [selectedRequisitionForProducts, setSelectedRequisitionForProducts] = useState<Requisition | null>(null);
+
+  // Estados separados para inputs (visual) e filtros (lógica)
+  const [searchInputs, setSearchInputs] = useState({
+    rcSearch: '',
+    projectSearch: '',
+    productSearch: ''
+  });
+
   const [filters, setFilters] = useState<FilterState>({
     rcSearch: '',
     projectSearch: '',
@@ -133,10 +141,10 @@ function App() {
     }
   }, [loading]);
 
-  // Debounce dos valores de busca
-  const debouncedRcSearch = useDebounce(filters.rcSearch, 400);
-  const debouncedProjectSearch = useDebounce(filters.projectSearch, 400);
-  const debouncedProductSearch = useDebounce(filters.productSearch, 400);
+  // Debounce dos valores de busca (dos inputs visuais)
+  const debouncedRcSearch = useDebounce(searchInputs.rcSearch, 400);
+  const debouncedProjectSearch = useDebounce(searchInputs.projectSearch, 400);
+  const debouncedProductSearch = useDebounce(searchInputs.productSearch, 400);
 
   // Aplicar filtros quando os valores debounced mudarem
   useEffect(() => {
@@ -150,20 +158,13 @@ function App() {
   }, [debouncedRcSearch, debouncedProjectSearch, debouncedProductSearch, filters.statusSearch, filters.freightFilter, filters.attentionFilter]);
 
   const handleFiltersChange = (newFilters: FilterState) => {
-    // Atualizar apenas os filtros que não são de busca por texto
-    const updatedFilters = {
-      ...newFilters,
-      rcSearch: filters.rcSearch,
-      projectSearch: filters.projectSearch,
-      productSearch: filters.productSearch
-    };
-    setFilters(updatedFilters);
-    filterRequisitions(updatedFilters);
+    // Atualizar filtros não-search
+    setFilters(newFilters);
   };
 
-  const handleSearchChange = (field: keyof FilterState, value: string) => {
-    const newFilters = { ...filters, [field]: value };
-    setFilters(newFilters);
+  const handleSearchChange = (field: 'rcSearch' | 'projectSearch' | 'productSearch', value: string) => {
+    // Atualizar apenas o estado visual do input (sem re-render pesado)
+    setSearchInputs(prev => ({ ...prev, [field]: value }));
   };
 
   const handleNewRequisition = () => {
@@ -526,27 +527,27 @@ function App() {
                   <input
                     type="text"
                     placeholder="Buscar por RC..."
-                    value={filters.rcSearch}
+                    value={searchInputs.rcSearch}
                     onChange={(e) => handleSearchChange('rcSearch', e.target.value)}
                     className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-48 transition-all duration-200 ${
-                      isDarkMode 
-                        ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
+                      isDarkMode
+                        ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
                         : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                     }`}
                   />
                 </div>
-                
+
                 <div className="relative">
                   <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
                   <input
                     type="text"
                     placeholder="Buscar projeto ou item..."
-                    value={filters.projectSearch}
+                    value={searchInputs.projectSearch}
                     onChange={(e) => handleSearchChange('projectSearch', e.target.value)}
                     list="projects-main"
                     className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 transition-all duration-200 ${
-                      isDarkMode 
-                        ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
+                      isDarkMode
+                        ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
                         : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                     }`}
                   />
@@ -556,17 +557,17 @@ function App() {
                     ))}
                   </datalist>
                 </div>
-                
+
                 <div className="relative">
                   <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
                   <input
                     type="text"
                     placeholder="Buscar produto..."
-                    value={filters.productSearch}
+                    value={searchInputs.productSearch}
                     onChange={(e) => handleSearchChange('productSearch', e.target.value)}
                     className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 transition-all duration-200 ${
-                      isDarkMode 
-                        ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
+                      isDarkMode
+                        ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
                         : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                     }`}
                   />
