@@ -161,6 +161,7 @@ export function useSupabaseRequisitions() {
   const [currentActiveFilters, setCurrentActiveFilters] = useState<FilterState>({
     rcSearch: '',
     projectSearch: '',
+    productSearch: '',
     statusSearch: ''
   });
   const [loading, setLoading] = useState(true);

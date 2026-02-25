@@ -117,13 +117,13 @@ function App() {
   const [searchInputs, setSearchInputs] = useState({
     rcSearch: '',
     projectSearch: '',
-    productDescriptionSearch: ''
+    productSearch: ''
   });
 
   // Debounce para as buscas
   const debouncedRcSearch = useDebounce(searchInputs.rcSearch, 500);
   const debouncedProjectSearch = useDebounce(searchInputs.projectSearch, 500);
-  const debouncedProductSearch = useDebounce(searchInputs.productDescriptionSearch, 500);
+  const debouncedProductSearch = useDebounce(searchInputs.productSearch, 500);
 
   // Aplicar filtros quando os valores debounced mudarem
   useEffect(() => {
@@ -131,7 +131,7 @@ function App() {
       ...filters,
       rcSearch: debouncedRcSearch,
       projectSearch: debouncedProjectSearch,
-      productDescriptionSearch: debouncedProductSearch
+      productSearch: debouncedProductSearch
     };
     setFilters(newFilters);
     filterRequisitions(newFilters);
@@ -583,8 +583,8 @@ function App() {
                   <input
                     type="text"
                     placeholder="Buscar produto..."
-                    value={searchInputs.productDescriptionSearch}
-                    onChange={(e) => handleSearchInputChange('productDescriptionSearch', e.target.value)}
+                    value={searchInputs.productSearch}
+                    onChange={(e) => handleSearchInputChange('productSearch', e.target.value)}
                     className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 transition-all duration-200 ${
                       isDarkMode 
                         ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
