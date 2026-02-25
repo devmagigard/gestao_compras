@@ -132,6 +132,11 @@ function App() {
     }
   }, [loading]);
 
+  // Aplicar filtros quando mudarem
+  useEffect(() => {
+    filterRequisitions(filters);
+  }, [filters]);
+
   const handleFiltersChange = (newFilters: FilterState) => {
     // Atualizar apenas os filtros que não são de busca por texto
     const updatedFilters = {
@@ -147,7 +152,6 @@ function App() {
   const handleSearchChange = (field: keyof FilterState, value: string) => {
     const newFilters = { ...filters, [field]: value };
     setFilters(newFilters);
-    filterRequisitions(newFilters);
   };
 
   const handleNewRequisition = () => {
