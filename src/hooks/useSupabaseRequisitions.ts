@@ -467,10 +467,78 @@ export function useSupabaseRequisitions() {
 
   // Filtrar requisições
   const filterRequisitions = (filters: FilterState) => {
-    // Atualizar os filtros ativos
     setCurrentActiveFilters(filters);
-    // Recarregar dados com os novos filtros
-    loadRequisitions(filters);
+    
+    let filtered = requisitions;
+
+    if (filters.rcSearch) {
+      const searchLower = filters.rcSearch.toLowerCase();
+      filtered = filtered.filter(req =>
+        req.rc.toLowerCase().includes(searchLower)
+      );
+    }
+
+    if (filters.projectSearch) {
+      const searchLower = filters.projectSearch.toLowerCase();
+      filtered = filtered.filter(req =>
+        req.project.toLowerCase().includes(searchLower) ||
+        req.item.toLowerCase().includes(searchLower)
+      );
+    }
+
+    if (filters.statusSearch) {
+      filtered = filtered.filter(req => req.status === filters.statusSearch);
+    }
+
+    if (filters.freightFilter && filters.freightFilter !== 'all') {
+      if (filters.freightFilter === 'with') {
+        filtered = filtered.filter(req => req.freight === true);
+      } else if (filters.freightFilter === 'without') {
+        filtered = filtered.filter(req => req.freight === false);
+      }
+    }
+
+    // Filtro de atenção para entregas
+    if (filters.attentionFilter && filters.attentionFilter !== 'all') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      filtered = filtered.filter(req => {
+        if (!req.deliveryForecast) return false;
+        if (req.status === 'Concluído' || req.status === 'Entregue') return false;
+        
+        const deliveryDate = createLocalDate(req.deliveryForecast);
+        deliveryDate.setHours(0, 0, 0, 0);
+        
+        const isDelayed = deliveryDate < today;
+        const fiveDaysFromNow = new Date(today);
+        fiveDaysFromNow.setDate(today.getDate() + 5);
+        const isUpcoming = deliveryDate >= today && deliveryDate <= fiveDaysFromNow;
+        
+        switch (filters.attentionFilter) {
+          case 'delayed':
+            return isDelayed;
+          case 'upcoming':
+            return isUpcoming && !isDelayed;
+          case 'attention':
+            return isDelayed || isUpcoming;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Busca por produtos - filtrar no lado do cliente por enquanto
+    if (filters.productSearch) {
+      // Para busca por produtos, vamos filtrar localmente por enquanto
+      // TODO: Implementar busca no banco quando necessário para performance
+      const searchLower = filters.productSearch.toLowerCase();
+      filtered = filtered.filter(req =>
+        req.item.toLowerCase().includes(searchLower)
+      );
+    }
+
+    setFilteredRequisitions(filtered);
   };
 
   // Métricas do dashboard
