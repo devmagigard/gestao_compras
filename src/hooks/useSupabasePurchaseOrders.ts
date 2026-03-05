@@ -110,6 +110,7 @@ function convertToSupabase(data: Omit<PurchaseOrderItem, 'id' | 'createdAt' | 'u
 
 export function useSupabasePurchaseOrders() {
   const [items, setItems] = useState<PurchaseOrderItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<PurchaseOrderItem[]>([]);
   const [upcomingDeliveries, setUpcomingDeliveries] = useState<PurchaseOrderItem[]>([]);
   const [currentActiveFilters, setCurrentActiveFilters] = useState<PurchaseOrderFilterState>({
     poSearch: '',
@@ -435,9 +436,6 @@ export function useSupabasePurchaseOrders() {
   useEffect(() => {
     calculateUpcomingDeliveries();
   }, [items]);
-
-  // Computed property para filteredItems
-  const filteredItems = items;
 
   return {
     items,

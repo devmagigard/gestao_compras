@@ -1,6 +1,6 @@
 import React from 'react';
 import { DashboardMetrics } from '../../types';
-import { FileText, Clock, CheckCircle, AlertTriangle, DollarSign, Zap, Receipt, AlertCircle, CalendarClock, Truck } from 'lucide-react';
+import { FileText, Clock, CheckCircle, AlertTriangle, DollarSign, Zap, Receipt, AlertCircle, CalendarClock, Truck, TrendingUp } from 'lucide-react';
 
 interface MetricsCardsProps {
   metrics: DashboardMetrics;
