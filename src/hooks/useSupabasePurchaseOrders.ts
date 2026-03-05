@@ -110,7 +110,6 @@ function convertToSupabase(data: Omit<PurchaseOrderItem, 'id' | 'createdAt' | 'u
 
 export function useSupabasePurchaseOrders() {
   const [items, setItems] = useState<PurchaseOrderItem[]>([]);
-  const [filteredItems, setFilteredItems] = useState<PurchaseOrderItem[]>([]);
   const [upcomingDeliveries, setUpcomingDeliveries] = useState<PurchaseOrderItem[]>([]);
   const [currentActiveFilters, setCurrentActiveFilters] = useState<PurchaseOrderFilterState>({
     poSearch: '',
@@ -121,13 +120,38 @@ export function useSupabasePurchaseOrders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadItems = async () => {
+  const loadItems = async (filters?: PurchaseOrderFilterState) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      let query = supabase
         .from('purchase_order_items')
-        .select('*')
-        .order('numero_po', { ascending: false });
+        .select('*');
+      
+      // Aplicar filtros se fornecidos
+      if (filters) {
+        if (filters.poSearch) {
+          query = query.ilike('numero_po', `%${filters.poSearch}%`);
+        }
+        
+        if (filters.itemCodeSearch) {
+          query = query.ilike('cod_item', `%${filters.itemCodeSearch}%`);
+        }
+        
+        if (filters.itemDescriptionSearch) {
+          query = query.ilike('descricao_item', `%${filters.itemDescriptionSearch}%`);
+        }
+        
+        if (filters.statusSearch) {
+          query = query.eq('status', filters.statusSearch);
+        }
+        
+        if (filters.currencyFilter && filters.currencyFilter !== 'all') {
+          query = query.eq('moeda', filters.currencyFilter);
+        }
+      }
+      
+      const { data, error } = await query.order('numero_po', { ascending: false });
 
       if (error) throw error;
 
@@ -136,8 +160,40 @@ export function useSupabasePurchaseOrders() {
       // Ordenar por número do PO numérico (números maiores primeiro)
       const sorted = sortByNumberDescending(convertedData, 'numeroPo');
 
+      // Aplicar filtros de data em memória (mais complexos)
+      let filtered = sorted;
+      if (filters?.deliveryFilter && filters.deliveryFilter !== 'all') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        filtered = sorted.filter(item => {
+          if (!item.dataEntrega) return false;
+          if (item.status === 'Entregue' || item.status === 'Cancelado') return false;
+
+          const deliveryDate = createLocalDate(item.dataEntrega);
+          deliveryDate.setHours(0, 0, 0, 0);
+
+          const isDelayed = deliveryDate < today;
+
+          const fiveDaysFromNow = new Date(today);
+          fiveDaysFromNow.setDate(today.getDate() + 5);
+          const isUpcoming = deliveryDate >= today && deliveryDate <= fiveDaysFromNow;
+
+          switch (filters.deliveryFilter) {
+            case 'delayed':
+              return isDelayed;
+            case 'upcoming':
+              return isUpcoming && !isDelayed;
+            case 'attention':
+              return isDelayed || isUpcoming;
+            default:
+              return true;
+          }
+        });
+      }
+
       setItems(sorted);
-      setFilteredItems(sorted);
+      setFilteredItems(filtered);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar itens');
       console.error('Erro ao carregar itens:', err);
@@ -164,11 +220,9 @@ export function useSupabasePurchaseOrders() {
         const updated = [newItem, ...prev];
         return sortByNumberDescending(updated, 'numeroPo');
       });
-
-      setFilteredItems(prev => {
-        const updated = [newItem, ...prev];
-        return sortByNumberDescending(updated, 'numeroPo');
-      });
+      
+      // Recarregar com filtros atuais
+      await loadItems(currentActiveFilters);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao adicionar item');
       console.error('Erro ao adicionar item:', err);
@@ -232,11 +286,9 @@ export function useSupabasePurchaseOrders() {
         const updated = prev.map(item => item.id === id ? updatedItem : item);
         return sortByNumberDescending(updated, 'numeroPo');
       });
-
-      setFilteredItems(prev => {
-        const updated = prev.map(item => item.id === id ? updatedItem : item);
-        return sortByNumberDescending(updated, 'numeroPo');
-      });
+      
+      // Recarregar com filtros atuais
+      await loadItems(currentActiveFilters);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao atualizar item');
       console.error('Erro ao atualizar item:', err);
@@ -253,7 +305,9 @@ export function useSupabasePurchaseOrders() {
       if (error) throw error;
 
       setItems(prev => prev.filter(item => item.id !== id));
-      setFilteredItems(prev => prev.filter(item => item.id !== id));
+      
+      // Recarregar com filtros atuais
+      await loadItems(currentActiveFilters);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao deletar item');
       console.error('Erro ao deletar item:', err);
@@ -274,82 +328,16 @@ export function useSupabasePurchaseOrders() {
 
       if (error) throw error;
 
-      await loadItems();
+      await loadItems(currentActiveFilters);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao importar itens');
       throw err;
     }
   };
 
-  const filterItems = (filters: PurchaseOrderFilterState) => {
+  const filterItems = async (filters: PurchaseOrderFilterState) => {
     setCurrentActiveFilters(filters);
-
-    let filtered = items;
-
-    if (filters.poSearch) {
-      const searchLower = filters.poSearch.toLowerCase();
-      filtered = filtered.filter(item =>
-        item.numeroPo.toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (filters.itemCodeSearch) {
-      const searchLower = filters.itemCodeSearch.toLowerCase();
-      filtered = filtered.filter(item =>
-        item.codItem.toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (filters.itemDescriptionSearch) {
-      const searchLower = filters.itemDescriptionSearch.toLowerCase();
-      filtered = filtered.filter(item =>
-        item.descricaoItem.toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (filters.statusSearch) {
-      filtered = filtered.filter(item => item.status === filters.statusSearch);
-    }
-
-    if (filters.currencyFilter && filters.currencyFilter !== 'all') {
-      filtered = filtered.filter(item => item.moeda === filters.currencyFilter);
-    }
-
-    if (filters.deliveryFilter && filters.deliveryFilter !== 'all') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      filtered = filtered.filter(item => {
-        if (!item.dataEntrega) return false;
-
-        if (item.status === 'Entregue' || item.status === 'Cancelado') return false;
-
-        const deliveryDate = createLocalDate(item.dataEntrega);
-        deliveryDate.setHours(0, 0, 0, 0);
-
-        const isDelayed = deliveryDate < today;
-
-        const fiveDaysFromNow = new Date(today);
-        fiveDaysFromNow.setDate(today.getDate() + 5);
-        const isUpcoming = deliveryDate >= today && deliveryDate <= fiveDaysFromNow;
-
-        switch (filters.deliveryFilter) {
-          case 'delayed':
-            return isDelayed;
-          case 'upcoming':
-            return isUpcoming && !isDelayed;
-          case 'attention':
-            return isDelayed || isUpcoming;
-          default:
-            return true;
-        }
-      });
-    }
-
-    // Manter ordenação por número do PO após filtrar
-    sortByNumberDescending(filtered, 'numeroPo');
-
-    setFilteredItems(filtered);
+    await loadItems(filters);
   };
 
   const getMetrics = (): PurchaseOrderMetrics => {
@@ -443,10 +431,13 @@ export function useSupabasePurchaseOrders() {
     loadItems();
   }, []);
 
+  // Calcular entregas próximas sempre que os itens mudarem
   useEffect(() => {
-    filterItems(currentActiveFilters);
     calculateUpcomingDeliveries();
-  }, [items, currentActiveFilters]);
+  }, [items]);
+
+  // Computed property para filteredItems
+  const filteredItems = items;
 
   return {
     items,

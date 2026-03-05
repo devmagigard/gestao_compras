@@ -9,6 +9,7 @@ import { RequisitionDetailModal } from './components/Requisitions/RequisitionDet
 import { RequisitionProductsModal } from './components/Requisitions/RequisitionProductsModal';
 import { FiltersModal } from './components/FiltersModal';
 import { BulkImportModal } from './components/BulkImportModal';
+import { ProductFiltersModal } from './components/PurchaseOrders/ProductFiltersModal';
 import { PurchaseOrderItemsTable } from './components/PurchaseOrders/PurchaseOrderItemsTable';
 import { PurchaseOrderItemForm } from './components/PurchaseOrders/PurchaseOrderItemForm';
 import { PurchaseOrderItemDetailModal } from './components/PurchaseOrders/PurchaseOrderItemDetailModal';
@@ -86,24 +87,31 @@ function App() {
   const [selectedRequisition, setSelectedRequisition] = useState<Requisition | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [filtersModalOpen, setFiltersModalOpen] = useState(false);
+  const [productFiltersModalOpen, setProductFiltersModalOpen] = useState(false);
   const [selectedRequisitionForDetail, setSelectedRequisitionForDetail] = useState<Requisition | null>(null);
   const [productsModalOpen, setProductsModalOpen] = useState(false);
   const [selectedRequisitionForProducts, setSelectedRequisitionForProducts] = useState<Requisition | null>(null);
 
   // Estados separados para inputs (visual) e filtros (lógica)
-  const [searchInputs, setSearchInputs] = useState({
+  const [requisitionSearchInputs, setRequisitionSearchInputs] = useState({
     rcSearch: '',
     projectSearch: '',
     productSearch: ''
   });
 
-  const [filters, setFilters] = useState<FilterState>({
+  const [requisitionFilters, setRequisitionFilters] = useState<FilterState>({
     rcSearch: '',
     projectSearch: '',
     productSearch: '',
     statusSearch: '',
     freightFilter: 'all',
     attentionFilter: 'all'
+  });
+
+  const [productSearchInputs, setProductSearchInputs] = useState({
+    poSearch: '',
+    itemCodeSearch: '',
+    itemDescriptionSearch: ''
   });
 
   const [productFormOpen, setProductFormOpen] = useState(false);
@@ -141,30 +149,59 @@ function App() {
     }
   }, [loading]);
 
-  // Debounce dos valores de busca (dos inputs visuais)
-  const debouncedRcSearch = useDebounce(searchInputs.rcSearch, 400);
-  const debouncedProjectSearch = useDebounce(searchInputs.projectSearch, 400);
-  const debouncedProductSearch = useDebounce(searchInputs.productSearch, 400);
+  // Debounce dos valores de busca para requisições
+  const debouncedRcSearch = useDebounce(requisitionSearchInputs.rcSearch, 400);
+  const debouncedProjectSearch = useDebounce(requisitionSearchInputs.projectSearch, 400);
+  const debouncedProductSearch = useDebounce(requisitionSearchInputs.productSearch, 400);
 
-  // Aplicar filtros quando os valores debounced mudarem
+  // Debounce dos valores de busca para produtos
+  const debouncedPoSearch = useDebounce(productSearchInputs.poSearch, 400);
+  const debouncedItemCodeSearch = useDebounce(productSearchInputs.itemCodeSearch, 400);
+  const debouncedItemDescriptionSearch = useDebounce(productSearchInputs.itemDescriptionSearch, 400);
+
+  // Aplicar filtros de requisições quando os valores debounced mudarem
   useEffect(() => {
+    if (currentView !== 'requisitions') return;
+    
     const debouncedFilters = {
-      ...filters,
+      ...requisitionFilters,
       rcSearch: debouncedRcSearch,
       projectSearch: debouncedProjectSearch,
       productSearch: debouncedProductSearch
     };
     filterRequisitions(debouncedFilters);
-  }, [debouncedRcSearch, debouncedProjectSearch, debouncedProductSearch, filters.statusSearch, filters.freightFilter, filters.attentionFilter]);
+  }, [debouncedRcSearch, debouncedProjectSearch, debouncedProductSearch, requisitionFilters.statusSearch, requisitionFilters.freightFilter, requisitionFilters.attentionFilter, currentView]);
 
-  const handleFiltersChange = (newFilters: FilterState) => {
+  // Aplicar filtros de produtos quando os valores debounced mudarem
+  useEffect(() => {
+    if (currentView !== 'products') return;
+    
+    const debouncedProductFilters = {
+      ...productFilters,
+      poSearch: debouncedPoSearch,
+      itemCodeSearch: debouncedItemCodeSearch,
+      itemDescriptionSearch: debouncedItemDescriptionSearch
+    };
+    filterPurchaseOrderItems(debouncedProductFilters);
+  }, [debouncedPoSearch, debouncedItemCodeSearch, debouncedItemDescriptionSearch, productFilters.statusSearch, productFilters.currencyFilter, productFilters.deliveryFilter, currentView]);
+
+  const handleRequisitionFiltersChange = (newFilters: FilterState) => {
     // Atualizar filtros não-search
-    setFilters(newFilters);
+    setRequisitionFilters(newFilters);
   };
 
-  const handleSearchChange = (field: 'rcSearch' | 'projectSearch' | 'productSearch', value: string) => {
-    // Atualizar apenas o estado visual do input (sem re-render pesado)
-    setSearchInputs(prev => ({ ...prev, [field]: value }));
+  const handleSearchChange = (field: string, value: string) => {
+    if (currentView === 'products') {
+      // Atualizar busca de produtos
+      if (field === 'poSearch' || field === 'itemCodeSearch' || field === 'itemDescriptionSearch') {
+        setProductSearchInputs(prev => ({ ...prev, [field]: value }));
+      }
+    } else {
+      // Atualizar busca de requisições
+      if (field === 'rcSearch' || field === 'projectSearch' || field === 'productSearch') {
+        setRequisitionSearchInputs(prev => ({ ...prev, [field]: value }));
+      }
+    }
   };
 
   const handleNewRequisition = () => {
@@ -526,9 +563,9 @@ function App() {
                   <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
                   <input
                     type="text"
-                    placeholder="Buscar por RC..."
-                    value={searchInputs.rcSearch}
-                    onChange={(e) => handleSearchChange('rcSearch', e.target.value)}
+                    placeholder={currentView === 'products' ? 'Buscar por PO...' : 'Buscar por RC...'}
+                    value={currentView === 'products' ? productSearchInputs.poSearch : requisitionSearchInputs.rcSearch}
+                    onChange={(e) => handleSearchChange(currentView === 'products' ? 'poSearch' : 'rcSearch', e.target.value)}
                     className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-48 transition-all duration-200 ${
                       isDarkMode
                         ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
@@ -541,10 +578,10 @@ function App() {
                   <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
                   <input
                     type="text"
-                    placeholder="Buscar projeto ou item..."
-                    value={searchInputs.projectSearch}
-                    onChange={(e) => handleSearchChange('projectSearch', e.target.value)}
-                    list="projects-main"
+                    placeholder={currentView === 'products' ? 'Buscar por código...' : 'Buscar projeto ou item...'}
+                    value={currentView === 'products' ? productSearchInputs.itemCodeSearch : requisitionSearchInputs.projectSearch}
+                    onChange={(e) => handleSearchChange(currentView === 'products' ? 'itemCodeSearch' : 'projectSearch', e.target.value)}
+                    list={currentView === 'products' ? 'item-codes-main' : 'projects-main'}
                     className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 transition-all duration-200 ${
                       isDarkMode
                         ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
@@ -556,15 +593,20 @@ function App() {
                       <option key={project} value={project} />
                     ))}
                   </datalist>
+                  <datalist id="item-codes-main">
+                    {productUniqueValues.itemCodes.map(code => (
+                      <option key={code} value={code} />
+                    ))}
+                  </datalist>
                 </div>
 
                 <div className="relative">
                   <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
                   <input
                     type="text"
-                    placeholder="Buscar produto..."
-                    value={searchInputs.productSearch}
-                    onChange={(e) => handleSearchChange('productSearch', e.target.value)}
+                    placeholder={currentView === 'products' ? 'Buscar por descrição...' : 'Buscar produto...'}
+                    value={currentView === 'products' ? productSearchInputs.itemDescriptionSearch : requisitionSearchInputs.productSearch}
+                    onChange={(e) => handleSearchChange(currentView === 'products' ? 'itemDescriptionSearch' : 'productSearch', e.target.value)}
                     className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 transition-all duration-200 ${
                       isDarkMode
                         ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
@@ -575,7 +617,13 @@ function App() {
                 
                 {/* Botão de Filtros Avançados */}
                 <button
-                  onClick={() => setFiltersModalOpen(true)}
+                  onClick={() => {
+                    if (currentView === 'products') {
+                      setProductFiltersModalOpen(true);
+                    } else {
+                      setFiltersModalOpen(true);
+                    }
+                  }}
                   className={`inline-flex items-center px-4 py-2 text-sm font-medium border rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 relative ${
                     isDarkMode
                       ? 'text-gray-300 bg-gray-800 border-gray-600 hover:bg-gray-700'
@@ -586,13 +634,25 @@ function App() {
                   Filtros
                   {/* Indicador de filtros ativos */}
                   {(() => {
-                    const activeCount = Object.entries(filters).filter(([key, value]) => {
-                      if (key === 'rcSearch' || key === 'projectSearch' || key === 'productSearch') return false;
-                      if (key === 'freightFilter' || key === 'attentionFilter') {
-                        return value !== 'all';
-                      }
-                      return value !== '';
-                    }).length;
+                    let activeCount = 0;
+                    
+                    if (currentView === 'products') {
+                      activeCount = Object.entries(productFilters).filter(([key, value]) => {
+                        if (key === 'poSearch' || key === 'itemCodeSearch' || key === 'itemDescriptionSearch') return false;
+                        if (key === 'currencyFilter' || key === 'deliveryFilter') {
+                          return value !== 'all';
+                        }
+                        return value !== '';
+                      }).length;
+                    } else {
+                      activeCount = Object.entries(requisitionFilters).filter(([key, value]) => {
+                        if (key === 'rcSearch' || key === 'projectSearch' || key === 'productSearch') return false;
+                        if (key === 'freightFilter' || key === 'attentionFilter') {
+                          return value !== 'all';
+                        }
+                        return value !== '';
+                      }).length;
+                    }
                     
                     return activeCount > 0 ? (
                       <span className="ml-2 px-2 py-0.5 bg-blue-600 text-white rounded-full text-xs font-medium">
@@ -670,9 +730,19 @@ function App() {
       <FiltersModal
         isOpen={filtersModalOpen}
         onClose={() => setFiltersModalOpen(false)}
-        currentFilters={filters}
-        onApplyFilters={handleFiltersChange}
+        currentFilters={requisitionFilters}
+        onApplyFilters={handleRequisitionFiltersChange}
         uniqueValues={uniqueValues}
+        isDarkMode={isDarkMode}
+      />
+
+      {/* Product Filters Modal */}
+      <ProductFiltersModal
+        isOpen={productFiltersModalOpen}
+        onClose={() => setProductFiltersModalOpen(false)}
+        currentFilters={productFilters}
+        onApplyFilters={handleProductFiltersChange}
+        uniqueValues={productUniqueValues}
         isDarkMode={isDarkMode}
       />
 
