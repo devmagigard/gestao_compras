@@ -1,9 +1,8 @@
 import React from 'react';
-import { X, Package, Calendar, DollarSign, TrendingUp, FileText, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { X, Package, Calendar, DollarSign, TrendingUp, FileText } from 'lucide-react';
 import { PurchaseOrderItem } from '../../types';
 import { PO_STATUS_COLORS, CURRENCY_SYMBOLS } from '../../utils/constants';
 import { formatDate } from '../../utils/formatters';
-import { getWarrantyDaysRemaining } from '../../utils/dateHelpers';
 
 interface PurchaseOrderItemDetailModalProps {
   isOpen: boolean;
@@ -224,6 +223,47 @@ export function PurchaseOrderItemDetailModal({
                   <p className="text-sm font-semibold text-gray-900">{formatDate(item.dataEntrega)}</p>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Informações de Garantia */}
+          <div>
+            <div className="flex items-center mb-3">
+              <Shield className="h-5 w-5 text-purple-600 mr-2" />
+              <h3 className="text-lg font-semibold text-gray-900">Informações de Garantia</h3>
+            </div>
+            <div className={`rounded-lg p-4 border ${warrantyInfo.bgColor} border-current border-opacity-20`}>
+              <div className="flex items-center mb-3">
+                <WarrantyIcon className={`h-6 w-6 mr-2 ${warrantyInfo.color}`} />
+                <span className={`text-lg font-semibold ${warrantyInfo.color}`}>
+                  {warrantyInfo.status}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-600">Período de Garantia</p>
+                  <p className="font-semibold text-gray-900">{item.garantia || 'Não especificado'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Início da Garantia</p>
+                  <p className="font-semibold text-gray-900">
+                    {formatDate(item.dataEntrega || item.dataPo) || 'Não disponível'}
+                  </p>
+                </div>
+                {item.warrantyEndDate && (
+                  <>
+                    <div>
+                      <p className="text-gray-600">Fim da Garantia</p>
+                      <p className="font-semibold text-gray-900">{formatDate(item.warrantyEndDate)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Status</p>
+                      <p className={`font-semibold ${warrantyInfo.color}`}>{warrantyInfo.message}</p>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
