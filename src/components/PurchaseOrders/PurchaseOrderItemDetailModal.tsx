@@ -1,8 +1,9 @@
 import React from 'react';
-import { X, Package, Calendar, DollarSign, TrendingUp, FileText } from 'lucide-react';
+import { X, Package, Calendar, DollarSign, TrendingUp, FileText, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { PurchaseOrderItem } from '../../types';
 import { PO_STATUS_COLORS, CURRENCY_SYMBOLS } from '../../utils/constants';
 import { formatDate } from '../../utils/formatters';
+import { getWarrantyDaysRemaining } from '../../utils/dateHelpers';
 
 interface PurchaseOrderItemDetailModalProps {
   isOpen: boolean;

@@ -442,6 +442,30 @@ export function PurchaseOrderItemsTable({
                   />
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap hidden xl:table-cell align-middle">
+                  {(() => {
+                    const warrantyStatus = getWarrantyStatus(item);
+                    const WarrantyIcon = warrantyStatus.icon;
+                    
+                    return (
+                      <Tooltip 
+                        content={
+                          item.warrantyEndDate 
+                            ? `Início: ${formatDate(item.dataEntrega || item.dataPo)}, Fim: ${formatDate(item.warrantyEndDate)}, Período: ${item.garantia}`
+                            : 'Garantia não especificada ou data de início não disponível'
+                        } 
+                        maxWidth="max-w-sm"
+                      >
+                        <div className="cursor-help">
+                          <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${warrantyStatus.bgColor} ${warrantyStatus.color} border border-current border-opacity-20`}>
+                            <WarrantyIcon className="h-3 w-3 mr-1.5" />
+                            {warrantyStatus.text}
+                          </div>
+                        </div>
+                      </Tooltip>
+                    );
+                  })()}
+                </td>
+                <td className="px-4 py-3 max-w-xs hidden xl:table-cell align-middle">
                   <Tooltip content={item.observacoes || ''} maxWidth="max-w-lg">
                     <div className="cursor-help">
                       <EditableCell
