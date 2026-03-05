@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { PurchaseOrderItem } from '../../types';
-import { CreditCard as Edit, Trash2, Package, Eye, AlertCircle, CalendarClock } from 'lucide-react';
+import { CreditCard as Edit, Trash2, Package, Eye, AlertCircle, CalendarClock, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { PO_STATUS_COLORS, PURCHASE_ORDER_STATUSES, CURRENCIES, CURRENCY_SYMBOLS } from '../../utils/constants';
 import { EditableCell } from '../Requisitions/EditableCell';
 import { Tooltip } from '../UI/Tooltip';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { createLocalDate } from '../../utils/dateHelpers';
+import { createLocalDate, getWarrantyDaysRemaining } from '../../utils/dateHelpers';
 
 interface PurchaseOrderItemsTableProps {
   items: PurchaseOrderItem[];
@@ -94,6 +94,61 @@ export function PurchaseOrderItemsTable({
   const formatCurrencyValue = (value: number, currency: string) => {
     const symbol = CURRENCY_SYMBOLS[currency as keyof typeof CURRENCY_SYMBOLS] || currency;
     return `${symbol} ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  const getWarrantyStatus = (item: PurchaseOrderItem) => {
+    if (!item.warrantyEndDate) {
+      return {
+        status: 'unknown',
+        daysRemaining: null,
+        icon: Shield,
+        color: 'text-gray-500',
+        bgColor: 'bg-gray-100',
+        text: 'N/A'
+      };
+    }
+
+    const daysRemaining = getWarrantyDaysRemaining(item.warrantyEndDate);
+    
+    if (daysRemaining === null) {
+      return {
+        status: 'unknown',
+        daysRemaining: null,
+        icon: Shield,
+        color: 'text-gray-500',
+        bgColor: 'bg-gray-100',
+        text: 'N/A'
+      };
+    }
+
+    if (daysRemaining < 0) {
+      return {
+        status: 'expired',
+        daysRemaining,
+        icon: ShieldAlert,
+        color: 'text-red-600',
+        bgColor: 'bg-red-100',
+        text: `Expirada há ${Math.abs(daysRemaining)} dias`
+      };
+    } else if (daysRemaining <= 90) {
+      return {
+        status: 'expiring',
+        daysRemaining,
+        icon: ShieldAlert,
+        color: 'text-amber-600',
+        bgColor: 'bg-amber-100',
+        text: `${daysRemaining} dias restantes`
+      };
+    } else {
+      return {
+        status: 'active',
+        daysRemaining,
+        icon: ShieldCheck,
+        color: 'text-green-600',
+        bgColor: 'bg-green-100',
+        text: `${daysRemaining} dias restantes`
+      };
+    }
   };
 
   if (items.length === 0) {
@@ -214,6 +269,11 @@ export function PurchaseOrderItemsTable({
                 }`}
               >
                 Data Entrega
+              </th>
+              <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider hidden xl:table-cell ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                Garantia
               </th>
               <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider hidden xl:table-cell ${
                 isDarkMode ? 'text-gray-400' : 'text-gray-600'

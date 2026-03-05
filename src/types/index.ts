@@ -87,6 +87,7 @@ export interface PurchaseOrderItem {
   status: PurchaseOrderStatus;
   observacoes: string;
   requisitionId: string;
+  warrantyEndDate?: string;
   createdAt: string;
   updatedAt: string;
 }

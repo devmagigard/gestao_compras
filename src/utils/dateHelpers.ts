@@ -143,3 +143,85 @@ export function isValidDate(dateString: string): boolean {
   const date = new Date(dateString + 'T00:00:00');
   return !isNaN(date.getTime()) && date.getFullYear() >= 1900 && date.getFullYear() <= 2100;
 }
+
+/**
+ * Calcula a data de término da garantia baseada na data de início e período
+ * @param startDate - Data de início da garantia (YYYY-MM-DD)
+ * @param warrantyPeriod - Período da garantia (ex: "12 meses", "1 ano", "24 months")
+ * @returns Data de término da garantia (YYYY-MM-DD) ou null se inválido
+ */
+export function calculateWarrantyEndDate(startDate: string, warrantyPeriod: string): string | null {
+  if (!startDate || !warrantyPeriod || !isValidDate(startDate)) {
+    return null;
+  }
+
+  const cleanPeriod = warrantyPeriod.toLowerCase().trim();
+  
+  // Extrair número do período
+  const numberMatch = cleanPeriod.match(/(\d+)/);
+  if (!numberMatch) return null;
+  
+  const periodNumber = parseInt(numberMatch[1], 10);
+  if (isNaN(periodNumber) || periodNumber <= 0) return null;
+
+  const startDateObj = createLocalDate(startDate);
+  let endDate = new Date(startDateObj);
+
+  // Determinar a unidade de tempo
+  if (cleanPeriod.includes('ano') || cleanPeriod.includes('year')) {
+    endDate.setFullYear(endDate.getFullYear() + periodNumber);
+  } else if (cleanPeriod.includes('mes') || cleanPeriod.includes('month')) {
+    endDate.setMonth(endDate.getMonth() + periodNumber);
+  } else if (cleanPeriod.includes('dia') || cleanPeriod.includes('day')) {
+    endDate.setDate(endDate.getDate() + periodNumber);
+  } else if (cleanPeriod.includes('semana') || cleanPeriod.includes('week')) {
+    endDate.setDate(endDate.getDate() + (periodNumber * 7));
+  } else {
+    // Padrão: assumir meses se não especificado
+    endDate.setMonth(endDate.getMonth() + periodNumber);
+  }
+
+  // Retornar no formato YYYY-MM-DD
+  const year = endDate.getFullYear();
+  const month = String(endDate.getMonth() + 1).padStart(2, '0');
+  const day = String(endDate.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Calcula a diferença em dias entre duas datas
+ * @param date1 - Primeira data (YYYY-MM-DD)
+ * @param date2 - Segunda data (YYYY-MM-DD)
+ * @returns Diferença em dias (date2 - date1) ou null se inválido
+ */
+export function getDaysDifference(date1: string, date2: string): number | null {
+  if (!date1 || !date2 || !isValidDate(date1) || !isValidDate(date2)) {
+    return null;
+  }
+
+  const dateObj1 = createLocalDate(date1);
+  const dateObj2 = createLocalDate(date2);
+  
+  dateObj1.setHours(0, 0, 0, 0);
+  dateObj2.setHours(0, 0, 0, 0);
+
+  const diffTime = dateObj2.getTime() - dateObj1.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays;
+}
+
+/**
+ * Calcula os dias restantes de garantia
+ * @param warrantyEndDate - Data de término da garantia (YYYY-MM-DD)
+ * @returns Dias restantes (positivo = ativa, negativo = expirada) ou null se inválido
+ */
+export function getWarrantyDaysRemaining(warrantyEndDate: string): number | null {
+  if (!warrantyEndDate || !isValidDate(warrantyEndDate)) {
+    return null;
+  }
+
+  const today = getCurrentDate();
+  return getDaysDifference(today, warrantyEndDate);
+}

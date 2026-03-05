@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { PurchaseOrderItem, PurchaseOrderFilterState, PurchaseOrderMetrics } from '../types';
-import { createLocalDate } from '../utils/dateHelpers';
+import { createLocalDate, calculateWarrantyEndDate } from '../utils/dateHelpers';
 
 // Função auxiliar para extrair número do RC/PO e ordenar
 function sortByNumberDescending<T extends { rc?: string; numeroPo?: string }>(
@@ -43,7 +43,7 @@ function convertFromSupabase(data: any): PurchaseOrderItem {
     }
   };
 
-  return {
+  const convertedItem = {
     id: data.id,
     numeroPo: data.numero_po,
     ultimaAtualizacao: formatDateField(data.ultima_atualizacao),
@@ -64,6 +64,17 @@ function convertFromSupabase(data: any): PurchaseOrderItem {
     createdAt: data.created_at,
     updatedAt: data.updated_at
   };
+
+  // Calcular data de término da garantia
+  if (convertedItem.garantia) {
+    // Usar data de entrega como início da garantia, ou data do PO como fallback
+    const warrantyStartDate = convertedItem.dataEntrega || convertedItem.dataPo;
+    if (warrantyStartDate) {
+      convertedItem.warrantyEndDate = calculateWarrantyEndDate(warrantyStartDate, convertedItem.garantia);
+    }
+  }
+
+  return convertedItem;
 }
 
 function convertToSupabase(data: Omit<PurchaseOrderItem, 'id' | 'createdAt' | 'updatedAt'>) {
