@@ -160,7 +160,6 @@ export function useSupabaseRequisitions() {
   const [currentActiveFilters, setCurrentActiveFilters] = useState<FilterState>({
     rcSearch: '',
     projectSearch: '',
-    productSearch: '',
     statusSearch: ''
   });
   const [loading, setLoading] = useState(true);
@@ -194,28 +193,6 @@ export function useSupabaseRequisitions() {
             query = query.eq('freight', true);
           } else if (filters.freightFilter === 'without') {
             query = query.eq('freight', false);
-          }
-        }
-        
-        // Busca por produtos - buscar requisições que têm produtos com a descrição
-        if (filters.productSearch) {
-          // Primeiro, buscar IDs de requisições que têm produtos com a descrição
-          const { data: productData, error: productError } = await supabase
-            .from('purchase_order_items')
-            .select('requisition_id')
-            .ilike('descricao_item', `%${filters.productSearch}%`);
-          
-          if (productError) throw productError;
-          
-          const requisitionIds = [...new Set(productData?.map(item => item.requisition_id).filter(Boolean))];
-          
-          if (requisitionIds.length > 0) {
-            query = query.in('id', requisitionIds);
-          } else {
-            // Se não encontrou produtos, retornar array vazio
-            setRequisitions([]);
-            setFilteredRequisitions([]);
-            return;
           }
         }
       }

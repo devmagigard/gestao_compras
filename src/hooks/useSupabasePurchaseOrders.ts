@@ -130,16 +130,16 @@ export function useSupabasePurchaseOrders() {
       
       // Aplicar filtros se fornecidos
       if (filters) {
+        if (filters.itemDescriptionSearch) {
+          query = query.ilike('descricao_item', `%${filters.itemDescriptionSearch}%`);
+        }
+        
         if (filters.poSearch) {
           query = query.ilike('numero_po', `%${filters.poSearch}%`);
         }
         
         if (filters.itemCodeSearch) {
           query = query.ilike('cod_item', `%${filters.itemCodeSearch}%`);
-        }
-        
-        if (filters.itemDescriptionSearch) {
-          query = query.ilike('descricao_item', `%${filters.itemDescriptionSearch}%`);
         }
         
         if (filters.statusSearch) {

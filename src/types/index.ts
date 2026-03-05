@@ -53,7 +53,6 @@ export type QuotationType = 'Simples' | 'Complexa';
 export interface FilterState {
   rcSearch: string;
   projectSearch: string;
-  productSearch: string;
   statusSearch: string;
   freightFilter?: 'all' | 'with' | 'without';
   attentionFilter?: 'all' | 'delayed' | 'upcoming' | 'attention';
