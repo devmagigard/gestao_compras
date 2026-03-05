@@ -95,22 +95,18 @@ function App() {
   // Estados separados para inputs (visual) e filtros (lógica)
   const [requisitionSearchInputs, setRequisitionSearchInputs] = useState({
     rcSearch: '',
-    projectSearch: '',
-    productSearch: ''
+    projectSearch: ''
   });
 
   const [requisitionFilters, setRequisitionFilters] = useState<FilterState>({
     rcSearch: '',
     projectSearch: '',
-    productSearch: '',
     statusSearch: '',
     freightFilter: 'all',
     attentionFilter: 'all'
   });
 
   const [productSearchInputs, setProductSearchInputs] = useState({
-    poSearch: '',
-    itemCodeSearch: '',
     itemDescriptionSearch: ''
   });
 
@@ -152,11 +148,8 @@ function App() {
   // Debounce dos valores de busca para requisições
   const debouncedRcSearch = useDebounce(requisitionSearchInputs.rcSearch, 400);
   const debouncedProjectSearch = useDebounce(requisitionSearchInputs.projectSearch, 400);
-  const debouncedProductSearch = useDebounce(requisitionSearchInputs.productSearch, 400);
 
   // Debounce dos valores de busca para produtos
-  const debouncedPoSearch = useDebounce(productSearchInputs.poSearch, 400);
-  const debouncedItemCodeSearch = useDebounce(productSearchInputs.itemCodeSearch, 400);
   const debouncedItemDescriptionSearch = useDebounce(productSearchInputs.itemDescriptionSearch, 400);
 
   // Aplicar filtros de requisições quando os valores debounced mudarem
@@ -166,11 +159,10 @@ function App() {
     const debouncedFilters = {
       ...requisitionFilters,
       rcSearch: debouncedRcSearch,
-      projectSearch: debouncedProjectSearch,
-      productSearch: debouncedProductSearch
+      projectSearch: debouncedProjectSearch
     };
     filterRequisitions(debouncedFilters);
-  }, [debouncedRcSearch, debouncedProjectSearch, debouncedProductSearch, requisitionFilters.statusSearch, requisitionFilters.freightFilter, requisitionFilters.attentionFilter, currentView]);
+  }, [debouncedRcSearch, debouncedProjectSearch, requisitionFilters.statusSearch, requisitionFilters.freightFilter, requisitionFilters.attentionFilter, currentView]);
 
   // Aplicar filtros de produtos quando os valores debounced mudarem
   useEffect(() => {
@@ -178,12 +170,10 @@ function App() {
     
     const debouncedProductFilters = {
       ...productFilters,
-      poSearch: debouncedPoSearch,
-      itemCodeSearch: debouncedItemCodeSearch,
       itemDescriptionSearch: debouncedItemDescriptionSearch
     };
     filterPurchaseOrderItems(debouncedProductFilters);
-  }, [debouncedPoSearch, debouncedItemCodeSearch, debouncedItemDescriptionSearch, productFilters.statusSearch, productFilters.currencyFilter, productFilters.deliveryFilter, currentView]);
+  }, [debouncedItemDescriptionSearch, productFilters.statusSearch, productFilters.currencyFilter, productFilters.deliveryFilter, currentView]);
 
   const handleRequisitionFiltersChange = (newFilters: FilterState) => {
     // Atualizar filtros não-search
@@ -193,12 +183,12 @@ function App() {
   const handleSearchChange = (field: string, value: string) => {
     if (currentView === 'products') {
       // Atualizar busca de produtos
-      if (field === 'poSearch' || field === 'itemCodeSearch' || field === 'itemDescriptionSearch') {
+      if (field === 'itemDescriptionSearch') {
         setProductSearchInputs(prev => ({ ...prev, [field]: value }));
       }
     } else {
       // Atualizar busca de requisições
-      if (field === 'rcSearch' || field === 'projectSearch' || field === 'productSearch') {
+      if (field === 'rcSearch' || field === 'projectSearch') {
         setRequisitionSearchInputs(prev => ({ ...prev, [field]: value }));
       }
     }
@@ -559,61 +549,62 @@ function App() {
 
               {/* Search Filters */}
               <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 items-end">
-                <div className="relative">
-                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
-                  <input
-                    type="text"
-                    placeholder={currentView === 'products' ? 'Buscar por PO...' : 'Buscar por RC...'}
-                    value={currentView === 'products' ? productSearchInputs.poSearch : requisitionSearchInputs.rcSearch}
-                    onChange={(e) => handleSearchChange(currentView === 'products' ? 'poSearch' : 'rcSearch', e.target.value)}
-                    className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-48 transition-all duration-200 ${
-                      isDarkMode
-                        ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                    }`}
-                  />
-                </div>
+                {currentView === 'products' ? (
+                  // Aba Produtos: apenas busca por descrição
+                  <div className="relative">
+                    <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
+                    <input
+                      type="text"
+                      placeholder="Buscar por descrição do produto..."
+                      value={productSearchInputs.itemDescriptionSearch}
+                      onChange={(e) => handleSearchChange('itemDescriptionSearch', e.target.value)}
+                      className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-80 transition-all duration-200 ${
+                        isDarkMode
+                          ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                    />
+                  </div>
+                ) : (
+                  // Aba Requisições: busca por RC e Projeto
+                  <>
+                    <div className="relative">
+                      <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
+                      <input
+                        type="text"
+                        placeholder="Buscar por RC..."
+                        value={requisitionSearchInputs.rcSearch}
+                        onChange={(e) => handleSearchChange('rcSearch', e.target.value)}
+                        className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-48 transition-all duration-200 ${
+                          isDarkMode
+                            ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
+                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                        }`}
+                      />
+                    </div>
 
-                <div className="relative">
-                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
-                  <input
-                    type="text"
-                    placeholder={currentView === 'products' ? 'Buscar por código...' : 'Buscar projeto ou item...'}
-                    value={currentView === 'products' ? productSearchInputs.itemCodeSearch : requisitionSearchInputs.projectSearch}
-                    onChange={(e) => handleSearchChange(currentView === 'products' ? 'itemCodeSearch' : 'projectSearch', e.target.value)}
-                    list={currentView === 'products' ? 'item-codes-main' : 'projects-main'}
-                    className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 transition-all duration-200 ${
-                      isDarkMode
-                        ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                    }`}
-                  />
-                  <datalist id="projects-main">
-                    {uniqueValues.projects.map(project => (
-                      <option key={project} value={project} />
-                    ))}
-                  </datalist>
-                  <datalist id="item-codes-main">
-                    {productUniqueValues.itemCodes.map(code => (
-                      <option key={code} value={code} />
-                    ))}
-                  </datalist>
-                </div>
-
-                <div className="relative">
-                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
-                  <input
-                    type="text"
-                    placeholder={currentView === 'products' ? 'Buscar por descrição...' : 'Buscar produto...'}
-                    value={currentView === 'products' ? productSearchInputs.itemDescriptionSearch : requisitionSearchInputs.productSearch}
-                    onChange={(e) => handleSearchChange(currentView === 'products' ? 'itemDescriptionSearch' : 'productSearch', e.target.value)}
-                    className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 transition-all duration-200 ${
-                      isDarkMode
-                        ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                    }`}
-                  />
-                </div>
+                    <div className="relative">
+                      <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
+                      <input
+                        type="text"
+                        placeholder="Buscar projeto ou item..."
+                        value={requisitionSearchInputs.projectSearch}
+                        onChange={(e) => handleSearchChange('projectSearch', e.target.value)}
+                        list="projects-main"
+                        className={`pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 transition-all duration-200 ${
+                          isDarkMode
+                            ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
+                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                        }`}
+                      />
+                      <datalist id="projects-main">
+                        {uniqueValues.projects.map(project => (
+                          <option key={project} value={project} />
+                        ))}
+                      </datalist>
+                    </div>
+                  </>
+                )}
                 
                 {/* Botão de Filtros Avançados */}
                 <button
