@@ -18,7 +18,7 @@ export function RecentActivity({ requisitions, isDarkMode = false }: RecentActiv
   // Função para verificar se uma requisição está atrasada
   const isDelayedDelivery = (requisition: Requisition) => {
     if (!requisition.deliveryForecast) return false;
-    if (requisition.status === 'Concluído' || requisition.status === 'Entregue') return false;
+    if (requisition.status === 'Concluído') return false;
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);

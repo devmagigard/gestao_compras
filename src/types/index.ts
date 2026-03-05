@@ -37,12 +37,10 @@ export interface Requisition {
 
 export type RequisitionStatus = 
   | 'Em cotação'
-  | 'Ag.Fatura'
   | 'Ag.Entrega'
   | 'Ag.Pagamento'
   | 'Concluído'
-  | 'Faturado'
-  | 'Entregue'
+  | 'Entregue Parcialmente'
   | 'Em Aprovação'
   | 'Em Requisição';
 

@@ -394,7 +394,7 @@ export function useSupabaseRequisitions() {
     
     // Requisições não concluídas (ainda em processo)
     const activeRequisitions = requisitions.filter(req => 
-      req.status !== 'Concluído' && req.status !== 'Entregue'
+      req.status !== 'Concluído'
     );
     
     // Entregas atrasadas: previsão de entrega no passado e ainda não concluída
@@ -420,7 +420,7 @@ export function useSupabaseRequisitions() {
       pendingApproval: requisitions.filter(req => req.status === 'Em Aprovação').length,
       inQuotation: requisitions.filter(req => req.status === 'Em cotação').length,
       completed: requisitions.filter(req => req.status === 'Concluído').length,
-      waitingForInvoice: requisitions.filter(req => req.status === 'Ag.Fatura').length,
+      waitingForInvoice: requisitions.filter(req => req.status === 'Entregue Parcialmente').length,
       waitingForDelivery: requisitions.filter(req => req.status === 'Ag.Entrega').length,
       totalValue: requisitions.reduce((sum, req) => sum + req.invoiceValue, 0),
       urgentItems: requisitions.filter(req => req.criticality === 'Urgente').length,

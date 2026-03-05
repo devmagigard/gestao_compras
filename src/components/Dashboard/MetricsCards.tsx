@@ -31,11 +31,11 @@ export function MetricsCards({ metrics, isDarkMode = false }: MetricsCardsProps)
       textColor: 'text-orange-600'
     },
     {
-      title: 'Aguardando Fatura',
+      title: 'Entregue Parcialmente',
       value: metrics.waitingForInvoice,
-      icon: Receipt,
-      color: 'bg-purple-500',
-      textColor: 'text-purple-600'
+      icon: TrendingUp,
+      color: 'bg-orange-500',
+      textColor: 'text-orange-600'
     },
     {
       title: 'Aguardando Entrega',

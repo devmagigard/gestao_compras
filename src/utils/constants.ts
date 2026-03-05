@@ -2,12 +2,10 @@ import { RequisitionStatus, Criticality, QuotationType, PurchaseOrderStatus, Cur
 
 export const REQUISITION_STATUSES: RequisitionStatus[] = [
   'Em cotação',
-  'Ag.Fatura',
   'Ag.Entrega',
   'Ag.Pagamento',
   'Concluído',
-  'Faturado',
-  'Entregue',
+  'Entregue Parcialmente',
   'Em Aprovação',
   'Em Requisição'
 ];
@@ -26,12 +24,10 @@ export const QUOTATION_TYPES: QuotationType[] = [
 
 export const STATUS_COLORS = {
   'Em cotação': 'bg-blue-100 text-blue-800',
-  'Ag.Fatura': 'bg-yellow-100 text-yellow-800',
   'Ag.Entrega': 'bg-cyan-100 text-cyan-800',
   'Ag.Pagamento': 'bg-purple-100 text-purple-800',
   'Concluído': 'bg-green-100 text-green-800',
-  'Faturado': 'bg-purple-100 text-purple-800',
-  'Entregue': 'bg-emerald-100 text-emerald-800',
+  'Entregue Parcialmente': 'bg-orange-100 text-orange-800',
   'Em Aprovação': 'bg-orange-100 text-orange-800',
   'Em Requisição': 'bg-indigo-100 text-indigo-800'
 };
