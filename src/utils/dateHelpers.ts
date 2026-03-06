@@ -151,12 +151,16 @@ export function isValidDate(dateString: string): boolean {
  * @returns Data de término da garantia (YYYY-MM-DD) ou null se inválido
  */
 export function calculateWarrantyEndDate(startDate: string, warrantyPeriod: string): string | null {
+  console.log('[calculateWarrantyEndDate] Input:', { startDate, warrantyPeriod });
+
   if (!startDate || !warrantyPeriod) {
+    console.log('[calculateWarrantyEndDate] Missing input');
     return null;
   }
 
   // Validar a data de início
   if (!isValidDate(startDate)) {
+    console.log('[calculateWarrantyEndDate] Invalid date:', startDate);
     return null;
   }
 
@@ -167,12 +171,20 @@ export function calculateWarrantyEndDate(startDate: string, warrantyPeriod: stri
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, ''); // Remove acentos
 
+  console.log('[calculateWarrantyEndDate] Clean period:', cleanPeriod);
+
   // Extrair número do período
   const numberMatch = cleanPeriod.match(/(\d+)/);
-  if (!numberMatch) return null;
+  if (!numberMatch) {
+    console.log('[calculateWarrantyEndDate] No number found');
+    return null;
+  }
 
   const periodNumber = parseInt(numberMatch[1], 10);
-  if (isNaN(periodNumber) || periodNumber <= 0) return null;
+  if (isNaN(periodNumber) || periodNumber <= 0) {
+    console.log('[calculateWarrantyEndDate] Invalid number:', periodNumber);
+    return null;
+  }
 
   const startDateObj = createLocalDate(startDate);
   let endDate = new Date(startDateObj);
@@ -200,7 +212,9 @@ export function calculateWarrantyEndDate(startDate: string, warrantyPeriod: stri
   const month = String(endDate.getMonth() + 1).padStart(2, '0');
   const day = String(endDate.getDate()).padStart(2, '0');
 
-  return `${year}-${month}-${day}`;
+  const result = `${year}-${month}-${day}`;
+  console.log('[calculateWarrantyEndDate] Result:', result);
+  return result;
 }
 
 /**
