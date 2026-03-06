@@ -681,7 +681,6 @@ function App() {
                     items={filteredPurchaseOrderItems}
                     upcomingDeliveries={upcomingProductDeliveries}
                     onEdit={handleEditProduct}
-                    onViewDetails={handleViewProductDetails}
                     onDelete={handleDeleteProduct}
                     onUpdate={(id, field, value) => updatePurchaseOrderItem(id, { [field]: value })}
                     isDarkMode={isDarkMode}

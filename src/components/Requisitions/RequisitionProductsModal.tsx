@@ -51,6 +51,7 @@ function convertFromSupabase(data: any): PurchaseOrderItem {
     status: data.status,
     observacoes: data.observacoes || '',
     requisitionId: data.requisition_id || '',
+    warrantyEndDate: formatDateField(data.warranty_end_date),
     createdAt: data.created_at,
     updatedAt: data.updated_at
   };
@@ -525,7 +526,6 @@ export function RequisitionProductsModal({
                   items={products}
                   upcomingDeliveries={upcomingDeliveries}
                   onEdit={handleEditProduct}
-                  onViewDetails={() => {}}
                   onDelete={handleDeleteProduct}
                   onUpdate={handleUpdateProduct}
                   isDarkMode={isDarkMode}

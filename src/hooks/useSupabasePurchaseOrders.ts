@@ -61,29 +61,10 @@ function convertFromSupabase(data: any): PurchaseOrderItem {
     status: data.status,
     observacoes: data.observacoes || '',
     requisitionId: data.requisition_id || '',
+    warrantyEndDate: formatDateField(data.warranty_end_date),
     createdAt: data.created_at,
     updatedAt: data.updated_at
   };
-
-  // Calcular data de término da garantia
-  if (convertedItem.garantia && convertedItem.garantia.trim() !== '') {
-    // Usar data de entrega como início da garantia, ou data do PO como fallback
-    const warrantyStartDate = convertedItem.dataEntrega || convertedItem.dataPo;
-    console.log('[Warranty Debug]', {
-      item: convertedItem.codItem,
-      garantia: convertedItem.garantia,
-      dataEntrega: convertedItem.dataEntrega,
-      dataPo: convertedItem.dataPo,
-      warrantyStartDate,
-    });
-    if (warrantyStartDate && warrantyStartDate.trim() !== '') {
-      const calculatedEndDate = calculateWarrantyEndDate(warrantyStartDate, convertedItem.garantia);
-      console.log('[Warranty Debug] Calculated:', calculatedEndDate);
-      if (calculatedEndDate) {
-        convertedItem.warrantyEndDate = calculatedEndDate;
-      }
-    }
-  }
 
   return convertedItem;
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PurchaseOrderItem } from '../../types';
-import { CreditCard as Edit, Trash2, Package, Eye, AlertCircle, CalendarClock, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { CreditCard as Edit, Trash2, Package, AlertCircle, CalendarClock, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { PO_STATUS_COLORS, PURCHASE_ORDER_STATUSES, CURRENCIES, CURRENCY_SYMBOLS } from '../../utils/constants';
 import { EditableCell } from '../Requisitions/EditableCell';
 import { Tooltip } from '../UI/Tooltip';
@@ -11,7 +11,6 @@ interface PurchaseOrderItemsTableProps {
   items: PurchaseOrderItem[];
   upcomingDeliveries: PurchaseOrderItem[];
   onEdit: (item: PurchaseOrderItem) => void;
-  onViewDetails: (item: PurchaseOrderItem) => void;
   onDelete: (id: string) => void;
   onUpdate: (id: string, field: keyof PurchaseOrderItem, value: any) => void;
   isDarkMode?: boolean;
@@ -21,7 +20,6 @@ export function PurchaseOrderItemsTable({
   items,
   upcomingDeliveries,
   onEdit,
-  onViewDetails,
   onDelete,
   onUpdate,
   isDarkMode = false
@@ -498,13 +496,6 @@ export function PurchaseOrderItemsTable({
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium align-middle">
                   <div className="flex items-center justify-end space-x-1">
-                    <button
-                      onClick={() => onViewDetails(item)}
-                      className="text-indigo-600 hover:text-indigo-700 p-2 hover:bg-indigo-50 rounded-lg transition-all duration-200 hover:scale-105"
-                      title="Ver Detalhes"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
                     <button
                       onClick={() => onEdit(item)}
                       className="text-blue-600 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-lg transition-all duration-200 hover:scale-105"
