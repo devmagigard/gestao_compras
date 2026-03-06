@@ -151,33 +151,47 @@ export function isValidDate(dateString: string): boolean {
  * @returns Data de término da garantia (YYYY-MM-DD) ou null se inválido
  */
 export function calculateWarrantyEndDate(startDate: string, warrantyPeriod: string): string | null {
-  if (!startDate || !warrantyPeriod || !isValidDate(startDate)) {
+  if (!startDate || !warrantyPeriod) {
     return null;
   }
 
-  const cleanPeriod = warrantyPeriod.toLowerCase().trim();
-  
+  // Validar a data de início
+  if (!isValidDate(startDate)) {
+    return null;
+  }
+
+  // Normalizar o período removendo acentos e convertendo para minúsculas
+  const cleanPeriod = warrantyPeriod
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, ''); // Remove acentos
+
   // Extrair número do período
   const numberMatch = cleanPeriod.match(/(\d+)/);
   if (!numberMatch) return null;
-  
+
   const periodNumber = parseInt(numberMatch[1], 10);
   if (isNaN(periodNumber) || periodNumber <= 0) return null;
 
   const startDateObj = createLocalDate(startDate);
   let endDate = new Date(startDateObj);
 
-  // Determinar a unidade de tempo
+  // Determinar a unidade de tempo (mais robusto, aceita plural/singular)
   if (cleanPeriod.includes('ano') || cleanPeriod.includes('year')) {
     endDate.setFullYear(endDate.getFullYear() + periodNumber);
-  } else if (cleanPeriod.includes('mes') || cleanPeriod.includes('month')) {
+  } else if (
+    cleanPeriod.includes('mes') ||
+    cleanPeriod.includes('month') ||
+    cleanPeriod.includes('mese') // Para capturar "meses"
+  ) {
     endDate.setMonth(endDate.getMonth() + periodNumber);
   } else if (cleanPeriod.includes('dia') || cleanPeriod.includes('day')) {
     endDate.setDate(endDate.getDate() + periodNumber);
   } else if (cleanPeriod.includes('semana') || cleanPeriod.includes('week')) {
     endDate.setDate(endDate.getDate() + (periodNumber * 7));
   } else {
-    // Padrão: assumir meses se não especificado
+    // Padrão: assumir meses se não especificado (apenas número)
     endDate.setMonth(endDate.getMonth() + periodNumber);
   }
 
@@ -185,7 +199,7 @@ export function calculateWarrantyEndDate(startDate: string, warrantyPeriod: stri
   const year = endDate.getFullYear();
   const month = String(endDate.getMonth() + 1).padStart(2, '0');
   const day = String(endDate.getDate()).padStart(2, '0');
-  
+
   return `${year}-${month}-${day}`;
 }
 

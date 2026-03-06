@@ -98,18 +98,32 @@ export function PurchaseOrderItemsTable({
 
   const getWarrantyStatus = (item: PurchaseOrderItem) => {
     if (!item.warrantyEndDate) {
+      // Verificar se tem garantia mas falta data de início
+      if (item.garantia && item.garantia.trim() !== '') {
+        return {
+          status: 'unknown',
+          daysRemaining: null,
+          icon: Shield,
+          color: 'text-gray-400',
+          bgColor: 'bg-gray-50',
+          text: 'Aguardando data',
+          tooltip: `Garantia: ${item.garantia}. Adicione a data de entrega ou data PO para calcular o término.`
+        };
+      }
+
       return {
         status: 'unknown',
         daysRemaining: null,
         icon: Shield,
         color: 'text-gray-500',
         bgColor: 'bg-gray-100',
-        text: 'N/A'
+        text: 'N/A',
+        tooltip: 'Nenhuma informação de garantia disponível'
       };
     }
 
     const daysRemaining = getWarrantyDaysRemaining(item.warrantyEndDate);
-    
+
     if (daysRemaining === null) {
       return {
         status: 'unknown',
@@ -117,7 +131,8 @@ export function PurchaseOrderItemsTable({
         icon: Shield,
         color: 'text-gray-500',
         bgColor: 'bg-gray-100',
-        text: 'N/A'
+        text: 'N/A',
+        tooltip: 'Não foi possível calcular o status da garantia'
       };
     }
 
@@ -128,7 +143,8 @@ export function PurchaseOrderItemsTable({
         icon: ShieldAlert,
         color: 'text-red-600',
         bgColor: 'bg-red-100',
-        text: `Expirada há ${Math.abs(daysRemaining)} dias`
+        text: `Expirada há ${Math.abs(daysRemaining)} dias`,
+        tooltip: `Garantia expirou em ${formatDate(item.warrantyEndDate)}`
       };
     } else if (daysRemaining <= 90) {
       return {
@@ -137,7 +153,8 @@ export function PurchaseOrderItemsTable({
         icon: ShieldAlert,
         color: 'text-amber-600',
         bgColor: 'bg-amber-100',
-        text: `${daysRemaining} dias restantes`
+        text: `${daysRemaining} dias restantes`,
+        tooltip: `Garantia expira em ${formatDate(item.warrantyEndDate)}`
       };
     } else {
       return {
@@ -146,7 +163,8 @@ export function PurchaseOrderItemsTable({
         icon: ShieldCheck,
         color: 'text-green-600',
         bgColor: 'bg-green-100',
-        text: `${daysRemaining} dias restantes`
+        text: `${daysRemaining} dias restantes`,
+        tooltip: `Garantia válida até ${formatDate(item.warrantyEndDate)}`
       };
     }
   };
@@ -447,12 +465,12 @@ export function PurchaseOrderItemsTable({
                     const WarrantyIcon = warrantyStatus.icon;
                     
                     return (
-                      <Tooltip 
-                        content={
-                          item.warrantyEndDate 
+                      <Tooltip
+                        content={warrantyStatus.tooltip || (
+                          item.warrantyEndDate
                             ? `Início: ${formatDate(item.dataEntrega || item.dataPo)}, Fim: ${formatDate(item.warrantyEndDate)}, Período: ${item.garantia}`
                             : 'Garantia não especificada ou data de início não disponível'
-                        } 
+                        )} 
                         maxWidth="max-w-sm"
                       >
                         <div className="cursor-help">

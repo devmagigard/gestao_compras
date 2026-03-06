@@ -66,11 +66,14 @@ function convertFromSupabase(data: any): PurchaseOrderItem {
   };
 
   // Calcular data de término da garantia
-  if (convertedItem.garantia) {
+  if (convertedItem.garantia && convertedItem.garantia.trim() !== '') {
     // Usar data de entrega como início da garantia, ou data do PO como fallback
     const warrantyStartDate = convertedItem.dataEntrega || convertedItem.dataPo;
-    if (warrantyStartDate) {
-      convertedItem.warrantyEndDate = calculateWarrantyEndDate(warrantyStartDate, convertedItem.garantia);
+    if (warrantyStartDate && warrantyStartDate.trim() !== '') {
+      const calculatedEndDate = calculateWarrantyEndDate(warrantyStartDate, convertedItem.garantia);
+      if (calculatedEndDate) {
+        convertedItem.warrantyEndDate = calculatedEndDate;
+      }
     }
   }
 

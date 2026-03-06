@@ -261,9 +261,12 @@ export function PurchaseOrderItemForm({
                   type="text"
                   value={formData.garantia}
                   onChange={(e) => handleChange('garantia', e.target.value)}
-                  placeholder="Ex: 12 meses"
+                  placeholder="Ex: 12 meses, 1 ano, 24 months"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Aceita: meses, anos, dias, semanas (ou apenas o número para assumir meses)
+                </p>
               </div>
             </div>
           </div>
