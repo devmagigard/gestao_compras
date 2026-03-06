@@ -309,8 +309,7 @@ export function useSupabasePurchaseOrders() {
         const updated = prev.map(item => item.id === id ? updatedItem : item);
         return sortByNumberDescending(updated, 'numeroPo');
       });
-      
-      // Recarregar com filtros atuais
+
       await loadItems(currentActiveFilters);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao atualizar item');

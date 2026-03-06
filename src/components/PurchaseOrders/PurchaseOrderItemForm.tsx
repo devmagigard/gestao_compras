@@ -132,14 +132,32 @@ export function PurchaseOrderItemForm({
     onClose();
   };
 
+  const calculateAutomaticStatus = (quantidade: number, quantidadeEntregue: number): PurchaseOrderStatus => {
+    if (quantidade <= 0) return formData.status;
+    if (quantidadeEntregue >= quantidade) return 'Entregue';
+    if (quantidadeEntregue > 0 && quantidadeEntregue < quantidade) return 'Parcialmente Entregue';
+    return formData.status;
+  };
+
   const handleChange = (field: keyof typeof formData, value: any) => {
-    // Para campos numéricos, permitir string vazia
     if (field === 'quantidade' || field === 'quantidadeEntregue' || field === 'valorUnitario') {
       if (value === '') {
         setFormData(prev => ({ ...prev, [field]: '' as any }));
         return;
       }
     }
+
+    if (field === 'quantidade' || field === 'quantidadeEntregue') {
+      const newQuantidade = field === 'quantidade' ? value : formData.quantidade;
+      const newQuantidadeEntregue = field === 'quantidadeEntregue' ? value : formData.quantidadeEntregue;
+      const autoStatus = calculateAutomaticStatus(
+        typeof newQuantidade === 'number' ? newQuantidade : 0,
+        typeof newQuantidadeEntregue === 'number' ? newQuantidadeEntregue : 0
+      );
+      setFormData(prev => ({ ...prev, [field]: value, status: autoStatus }));
+      return;
+    }
+
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -251,6 +269,19 @@ export function PurchaseOrderItemForm({
                     <option key={status} value={status}>{status}</option>
                   ))}
                 </select>
+                {(() => {
+                  const qtd = typeof formData.quantidade === 'number' ? formData.quantidade : 0;
+                  const qtdEntregue = typeof formData.quantidadeEntregue === 'number' ? formData.quantidadeEntregue : 0;
+                  const autoStatus = calculateAutomaticStatus(qtd, qtdEntregue);
+                  if (autoStatus !== formData.status && qtd > 0 && formData.status !== 'Cancelado') {
+                    return (
+                      <p className="text-xs text-blue-600 mt-1">
+                        Status será automaticamente ajustado para: {autoStatus}
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
 
               <div>
