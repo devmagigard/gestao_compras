@@ -190,7 +190,7 @@ export function PurchaseOrderItemForm({
                 </label>
                 <DateInput
                   value={formData.dataPo}
-                  onChange={(e) => handleChange('dataPo', e.target.value)}
+                  onChange={(value) => handleChange('dataPo', value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -431,7 +431,7 @@ export function PurchaseOrderItemForm({
                 </label>
                 <DateInput
                   value={formData.ultimaAtualizacao}
-                  onChange={(e) => handleChange('ultimaAtualizacao', e.target.value)}
+                  onChange={(value) => handleChange('ultimaAtualizacao', value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -442,7 +442,7 @@ export function PurchaseOrderItemForm({
                 </label>
                 <DateInput
                   value={formData.dataEntrega}
-                  onChange={(e) => handleChange('dataEntrega', e.target.value)}
+                  onChange={(value) => handleChange('dataEntrega', value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
