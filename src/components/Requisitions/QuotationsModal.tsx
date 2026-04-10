@@ -147,6 +147,7 @@ function QuotationForm({
   onCancel,
   saving,
   title,
+  saveError,
 }: {
   form: QuotationFormData;
   onChange: (field: keyof QuotationFormData, value: string) => void;
@@ -154,6 +155,7 @@ function QuotationForm({
   onCancel: () => void;
   saving: boolean;
   title: string;
+  saveError?: string | null;
 }) {
   return (
     <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5">
@@ -213,10 +215,17 @@ function QuotationForm({
           />
         </div>
       </div>
+      {saveError && (
+        <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-3">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          {saveError}
+        </div>
+      )}
       <div className="flex justify-end gap-2 mt-4">
         <button
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          disabled={saving}
+          className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Cancelar
         </button>
@@ -240,6 +249,7 @@ export function QuotationsModal({ isOpen, onClose, requisition }: QuotationsModa
   const [addForm, setAddForm] = useState<QuotationFormData>(emptyForm);
   const [editForm, setEditForm] = useState<QuotationFormData>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [settingWinner, setSettingWinner] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
@@ -267,6 +277,7 @@ export function QuotationsModal({ isOpen, onClose, requisition }: QuotationsModa
 
   async function handleAddSave() {
     setSaving(true);
+    setSaveError(null);
     try {
       await addQuotation(requisition!.id, {
         supplierName: addForm.supplierName.trim(),
@@ -277,6 +288,9 @@ export function QuotationsModal({ isOpen, onClose, requisition }: QuotationsModa
       });
       setAddForm(emptyForm);
       setShowAddForm(false);
+      setSaveError(null);
+    } catch (err: any) {
+      setSaveError(err?.message || 'Erro ao salvar cotacao. Tente novamente.');
     } finally {
       setSaving(false);
     }
@@ -285,6 +299,7 @@ export function QuotationsModal({ isOpen, onClose, requisition }: QuotationsModa
   async function handleEditSave() {
     if (!editingId) return;
     setSaving(true);
+    setSaveError(null);
     try {
       await updateQuotation(editingId, {
         supplierName: editForm.supplierName.trim(),
@@ -294,6 +309,9 @@ export function QuotationsModal({ isOpen, onClose, requisition }: QuotationsModa
         notes: editForm.notes.trim(),
       });
       setEditingId(null);
+      setSaveError(null);
+    } catch (err: any) {
+      setSaveError(err?.message || 'Erro ao salvar cotacao. Tente novamente.');
     } finally {
       setSaving(false);
     }
@@ -403,8 +421,9 @@ export function QuotationsModal({ isOpen, onClose, requisition }: QuotationsModa
                           form={editForm}
                           onChange={handleEditChange}
                           onSave={handleEditSave}
-                          onCancel={() => setEditingId(null)}
+                          onCancel={() => { setEditingId(null); setSaveError(null); }}
                           saving={saving}
+                          saveError={saveError}
                         />
                       </div>
                     ) : (
@@ -438,8 +457,9 @@ export function QuotationsModal({ isOpen, onClose, requisition }: QuotationsModa
                   form={addForm}
                   onChange={handleAddChange}
                   onSave={handleAddSave}
-                  onCancel={() => { setShowAddForm(false); setAddForm(emptyForm); }}
+                  onCancel={() => { setShowAddForm(false); setAddForm(emptyForm); setSaveError(null); }}
                   saving={saving}
+                  saveError={saveError}
                 />
               )}
 
