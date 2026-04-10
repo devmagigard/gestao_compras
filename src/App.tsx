@@ -395,6 +395,30 @@ function App() {
     filterPurchaseOrderItems(newFilters);
   };
 
+  const handleProductMetricCardClick = (filterKey: 'partiallyDelivered' | 'upcoming' | 'delayed' | null) => {
+    const newFilters = { ...productFilters };
+    if (filterKey === null) {
+      newFilters.statusSearch = '';
+      newFilters.deliveryFilter = 'all';
+    } else if (filterKey === 'partiallyDelivered') {
+      const alreadyActive = newFilters.statusSearch === 'Parcialmente Entregue';
+      newFilters.statusSearch = alreadyActive ? '' : 'Parcialmente Entregue';
+      newFilters.deliveryFilter = 'all';
+    } else {
+      const alreadyActive = newFilters.deliveryFilter === filterKey;
+      newFilters.deliveryFilter = alreadyActive ? 'all' : filterKey;
+      newFilters.statusSearch = '';
+    }
+    handleProductFiltersChange(newFilters);
+  };
+
+  const activeMetricFilter = (() => {
+    if (productFilters.statusSearch === 'Parcialmente Entregue') return 'partiallyDelivered' as const;
+    if (productFilters.deliveryFilter === 'upcoming') return 'upcoming' as const;
+    if (productFilters.deliveryFilter === 'delayed') return 'delayed' as const;
+    return null;
+  })();
+
   const handleMigration = async () => {
     setMigrationStatus({ inProgress: true, message: 'Migrando dados...', type: 'info' });
 
@@ -679,7 +703,12 @@ function App() {
                 />
               ) : (
                 <div className="space-y-6">
-                  <ProductMetricsCards metrics={productMetrics} isDarkMode={isDarkMode} />
+                  <ProductMetricsCards
+                    metrics={productMetrics}
+                    isDarkMode={isDarkMode}
+                    onCardClick={handleProductMetricCardClick}
+                    activeFilter={activeMetricFilter}
+                  />
                   <PurchaseOrderItemsTable
                     items={filteredPurchaseOrderItems}
                     upcomingDeliveries={upcomingProductDeliveries}
