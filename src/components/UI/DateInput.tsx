@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { convertISOToBrazilian, convertBrazilianToISO } from '../../utils/dateHelpers';
 
 interface DateInputProps {
@@ -23,61 +23,52 @@ export function DateInput({
   name
 }: DateInputProps) {
   const [displayValue, setDisplayValue] = useState('');
+  const isUserTyping = useRef(false);
 
-  // Converter valor ISO para formato brasileiro para exibição
   useEffect(() => {
-    if (value) {
-      const brazilianDate = convertISOToBrazilian(value);
-      setDisplayValue(brazilianDate);
-    } else {
-      setDisplayValue('');
+    if (!isUserTyping.current) {
+      if (value) {
+        setDisplayValue(convertISOToBrazilian(value));
+      } else {
+        setDisplayValue('');
+      }
     }
   }, [value]);
 
+  const applyMask = (raw: string): string => {
+    const digits = raw.replace(/\D/g, '').substring(0, 8);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return `${digits.substring(0, 2)}/${digits.substring(2)}`;
+    return `${digits.substring(0, 2)}/${digits.substring(2, 4)}/${digits.substring(4)}`;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    
-    // Permitir apenas números e barras
-    const cleanValue = inputValue.replace(/[^\d\/]/g, '');
-    
-    // Aplicar máscara dd/mm/yyyy
-    let maskedValue = cleanValue;
-    if (cleanValue.length >= 2 && !cleanValue.includes('/')) {
-      maskedValue = cleanValue.substring(0, 2) + '/' + cleanValue.substring(2);
-    }
-    if (cleanValue.length >= 5 && cleanValue.split('/').length === 2) {
-      const parts = cleanValue.split('/');
-      maskedValue = parts[0] + '/' + parts[1].substring(0, 2) + '/' + parts[1].substring(2);
-    }
-    if (maskedValue.length > 10) {
-      maskedValue = maskedValue.substring(0, 10);
-    }
-    
-    setDisplayValue(maskedValue);
-    
-    // Se a data está completa (dd/mm/yyyy), converter para ISO e enviar
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(maskedValue)) {
-      const isoDate = convertBrazilianToISO(maskedValue);
-      if (isoDate) {
-        onChange(isoDate);
-      }
-    } else if (maskedValue === '') {
+    isUserTyping.current = true;
+    const masked = applyMask(e.target.value);
+    setDisplayValue(masked);
+
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(masked)) {
+      const iso = convertBrazilianToISO(masked);
+      onChange(iso || '');
+    } else if (masked === '') {
       onChange('');
     }
   };
 
   const handleBlur = () => {
-    // Validar e corrigir a data ao sair do campo
-    if (displayValue && /^\d{2}\/\d{2}\/\d{4}$/.test(displayValue)) {
-      const isoDate = convertBrazilianToISO(displayValue);
-      if (isoDate) {
-        onChange(isoDate);
-        setDisplayValue(convertISOToBrazilian(isoDate));
+    isUserTyping.current = false;
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(displayValue)) {
+      const iso = convertBrazilianToISO(displayValue);
+      if (iso) {
+        onChange(iso);
+        setDisplayValue(convertISOToBrazilian(iso));
       } else {
-        // Data inválida, limpar
         setDisplayValue('');
         onChange('');
       }
+    } else if (displayValue !== '') {
+      setDisplayValue('');
+      onChange('');
     }
   };
 
@@ -88,7 +79,7 @@ export function DateInput({
       onChange={handleChange}
       onBlur={handleBlur}
       placeholder={placeholder}
-      className={`${className}`}
+      className={className}
       required={required}
       disabled={disabled}
       id={id}
