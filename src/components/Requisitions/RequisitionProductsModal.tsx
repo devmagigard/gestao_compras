@@ -219,6 +219,7 @@ export function RequisitionProductsModal({
         supabaseUpdates.status = dataWithRequisition.status;
         supabaseUpdates.observacoes = dataWithRequisition.observacoes || null;
         supabaseUpdates.requisition_id = requisition!.id;
+        supabaseUpdates.warranty_end_date = formatDateForSupabase(dataWithRequisition.warrantyEndDate || '');
 
         const { error } = await supabase
           .from('purchase_order_items')
@@ -261,9 +262,10 @@ export function RequisitionProductsModal({
           data_entrega: formatDateForSupabase(dataWithRequisition.dataEntrega),
           status: dataWithRequisition.status,
           observacoes: dataWithRequisition.observacoes || null,
-          requisition_id: requisition!.id
+          requisition_id: requisition!.id,
+          warranty_end_date: formatDateForSupabase(dataWithRequisition.warrantyEndDate || '')
         };
-        
+
         const { error } = await supabase
           .from('purchase_order_items')
           .insert([supabaseData]);
@@ -300,6 +302,24 @@ export function RequisitionProductsModal({
     } catch (err) {
       console.error('Erro ao deletar produto:', err);
       alert('Erro ao deletar produto. Tente novamente.');
+    }
+  };
+
+  const handleDeleteMultipleProducts = async (ids: string[]) => {
+    if (!confirm(`Tem certeza que deseja excluir ${ids.length} produto(s)?`)) return;
+
+    try {
+      const { error } = await supabase
+        .from('purchase_order_items')
+        .delete()
+        .in('id', ids);
+
+      if (error) throw error;
+
+      await loadProducts();
+    } catch (err) {
+      console.error('Erro ao deletar produtos:', err);
+      alert('Erro ao deletar produtos. Tente novamente.');
     }
   };
 
@@ -542,6 +562,7 @@ export function RequisitionProductsModal({
                   upcomingDeliveries={upcomingDeliveries}
                   onEdit={handleEditProduct}
                   onDelete={handleDeleteProduct}
+                  onDeleteMultiple={handleDeleteMultipleProducts}
                   onUpdate={handleUpdateProduct}
                   isDarkMode={isDarkMode}
                 />
