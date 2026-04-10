@@ -1,8 +1,9 @@
 import React from 'react';
-import { X, Package, Calendar, DollarSign, TrendingUp, FileText } from 'lucide-react';
+import { X, Package, Calendar, DollarSign, TrendingUp, FileText, Shield, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { PurchaseOrderItem } from '../../types';
 import { PO_STATUS_COLORS, CURRENCY_SYMBOLS } from '../../utils/constants';
 import { formatDate } from '../../utils/formatters';
+import { getWarrantyDaysRemaining } from '../../utils/dateHelpers';
 
 interface PurchaseOrderItemDetailModalProps {
   isOpen: boolean;
@@ -30,6 +31,68 @@ export function PurchaseOrderItemDetailModal({
     const symbol = CURRENCY_SYMBOLS[item.moeda as keyof typeof CURRENCY_SYMBOLS] || item.moeda;
     return `${symbol} ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
+
+  const getWarrantyInfo = () => {
+    if (!item.warrantyEndDate) {
+      if (item.garantia && item.garantia.trim() !== '') {
+        return {
+          status: 'Aguardando data',
+          message: 'Adicione a data de entrega ou data PO para calcular o término.',
+          icon: Shield,
+          color: 'text-gray-500',
+          bgColor: 'bg-gray-50'
+        };
+      }
+      return {
+        status: 'N/A',
+        message: 'Nenhuma informação de garantia disponível.',
+        icon: Shield,
+        color: 'text-gray-500',
+        bgColor: 'bg-gray-50'
+      };
+    }
+
+    const daysRemaining = getWarrantyDaysRemaining(item.warrantyEndDate);
+
+    if (daysRemaining === null) {
+      return {
+        status: 'N/A',
+        message: 'Não foi possível calcular o status da garantia.',
+        icon: Shield,
+        color: 'text-gray-500',
+        bgColor: 'bg-gray-50'
+      };
+    }
+
+    if (daysRemaining < 0) {
+      return {
+        status: 'Expirada',
+        message: `Expirou há ${Math.abs(daysRemaining)} dias`,
+        icon: ShieldAlert,
+        color: 'text-red-600',
+        bgColor: 'bg-red-50'
+      };
+    } else if (daysRemaining <= 90) {
+      return {
+        status: 'Expirando em breve',
+        message: `${daysRemaining} dias restantes`,
+        icon: ShieldAlert,
+        color: 'text-amber-600',
+        bgColor: 'bg-amber-50'
+      };
+    } else {
+      return {
+        status: 'Ativa',
+        message: `${daysRemaining} dias restantes`,
+        icon: ShieldCheck,
+        color: 'text-green-600',
+        bgColor: 'bg-green-50'
+      };
+    }
+  };
+
+  const warrantyInfo = getWarrantyInfo();
+  const WarrantyIcon = warrantyInfo.icon;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
