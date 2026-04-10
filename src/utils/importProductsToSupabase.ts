@@ -22,7 +22,8 @@ export interface ProgressCallback {
 
 export async function importProductsToSupabase(
   products: Omit<PurchaseOrderItem, 'id' | 'createdAt' | 'updatedAt'>[],
-  onProgress?: ProgressCallback
+  onProgress?: ProgressCallback,
+  requisitionId?: string
 ): Promise<ImportResult> {
   const errors: ImportError[] = [];
   let successful = 0;
@@ -57,7 +58,9 @@ export async function importProductsToSupabase(
           data_entrega: toDate(product.dataEntrega),
           status: product.status,
           observacoes: product.observacoes || null,
-          requisition_id: product.requisitionId && product.requisitionId.trim() !== '' ? product.requisitionId : null
+          requisition_id: requisitionId && requisitionId.trim() !== ''
+            ? requisitionId
+            : (product.requisitionId && product.requisitionId.trim() !== '' ? product.requisitionId : null)
         });
 
       if (error) {

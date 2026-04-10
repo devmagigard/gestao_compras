@@ -9,9 +9,11 @@ interface BulkImportProductsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImportComplete: () => void;
+  requisitionId?: string;
+  requisitionLabel?: string;
 }
 
-export function BulkImportProductsModal({ isOpen, onClose, onImportComplete }: BulkImportProductsModalProps) {
+export function BulkImportProductsModal({ isOpen, onClose, onImportComplete, requisitionId, requisitionLabel }: BulkImportProductsModalProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ processed: 0, total: 0, successful: 0, failed: 0 });
@@ -70,7 +72,7 @@ export function BulkImportProductsModal({ isOpen, onClose, onImportComplete }: B
           successful: progressUpdate.successful,
           failed: progressUpdate.failed
         });
-      });
+      }, requisitionId);
 
       setResult(importResult);
 
@@ -113,7 +115,11 @@ export function BulkImportProductsModal({ isOpen, onClose, onImportComplete }: B
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Importar Produtos em Massa</h2>
-              <p className="text-xs text-gray-500">Adicione varios produtos de uma vez via Excel ou CSV</p>
+              <p className="text-xs text-gray-500">
+                {requisitionLabel
+                  ? `Vinculando a requisicao ${requisitionLabel}`
+                  : 'Adicione varios produtos de uma vez via Excel ou CSV'}
+              </p>
             </div>
           </div>
           <button

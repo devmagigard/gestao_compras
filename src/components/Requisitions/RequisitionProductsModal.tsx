@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Package, DollarSign, TrendingUp } from 'lucide-react';
+import { X, Plus, Package, DollarSign, TrendingUp, Upload } from 'lucide-react';
 import { Requisition, PurchaseOrderItem } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { PurchaseOrderItemsTable } from '../PurchaseOrders/PurchaseOrderItemsTable';
 import { PurchaseOrderItemForm } from '../PurchaseOrders/PurchaseOrderItemForm';
+import { BulkImportProductsModal } from '../PurchaseOrders/BulkImportProductsModal';
 import { STATUS_COLORS } from '../../utils/constants';
 import { formatCurrency } from '../../utils/formatters';
 import { createLocalDate } from '../../utils/dateHelpers';
@@ -104,6 +105,7 @@ export function RequisitionProductsModal({
   const [products, setProducts] = useState<PurchaseOrderItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [productFormOpen, setProductFormOpen] = useState(false);
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<PurchaseOrderItem | null>(null);
   const [upcomingDeliveries, setUpcomingDeliveries] = useState<PurchaseOrderItem[]>([]);
 
@@ -495,13 +497,26 @@ export function RequisitionProductsModal({
             <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               {products.length === 0 ? 'Nenhum produto cadastrado' : `${products.length} produto(s) cadastrado(s)`}
             </p>
-            <button
-              onClick={handleAddProduct}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Produto
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setBulkImportOpen(true)}
+                className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors border ${
+                  isDarkMode
+                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Importar em Massa
+              </button>
+              <button
+                onClick={handleAddProduct}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Produto
+              </button>
+            </div>
           </div>
 
           {/* Products Table */}
@@ -544,6 +559,18 @@ export function RequisitionProductsModal({
         item={selectedProduct}
         uniqueValues={getUniqueValues()}
         defaultValues={selectedProduct ? undefined : getDefaultProductData()}
+      />
+
+      {/* Bulk Import Modal */}
+      <BulkImportProductsModal
+        isOpen={bulkImportOpen}
+        onClose={() => setBulkImportOpen(false)}
+        onImportComplete={() => {
+          setBulkImportOpen(false);
+          loadProducts();
+        }}
+        requisitionId={requisition?.id}
+        requisitionLabel={requisition?.rc}
       />
     </>
   );
