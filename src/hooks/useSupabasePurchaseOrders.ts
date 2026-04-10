@@ -43,25 +43,34 @@ function convertFromSupabase(data: any): PurchaseOrderItem {
     }
   };
 
+  const dataEntrega = formatDateField(data.data_entrega);
+  const dataPo = formatDateField(data.data_po);
+  const garantia = data.garantia || '';
+  const startDate = dataEntrega || dataPo;
+
+  const warrantyEndDateFromDb = formatDateField(data.warranty_end_date);
+  const warrantyEndDate = warrantyEndDateFromDb ||
+    ((startDate && garantia) ? calculateWarrantyEndDate(startDate, garantia) || '' : '');
+
   const convertedItem = {
     id: data.id,
     numeroPo: data.numero_po,
     ultimaAtualizacao: formatDateField(data.ultima_atualizacao),
-    dataPo: formatDateField(data.data_po),
+    dataPo,
     codItem: data.cod_item,
     descricaoItem: data.descricao_item,
     ncm: data.ncm || '',
-    garantia: data.garantia || '',
+    garantia,
     quantidade: data.quantidade || 0,
     quantidadeEntregue: data.quantidade_entregue || 0,
     valorUnitario: data.valor_unitario || 0,
     moeda: data.moeda || 'BRL',
     condicoesPagamento: data.condicoes_pagamento || '',
-    dataEntrega: formatDateField(data.data_entrega),
+    dataEntrega,
     status: data.status,
     observacoes: data.observacoes || '',
     requisitionId: data.requisition_id || '',
-    warrantyEndDate: formatDateField(data.warranty_end_date),
+    warrantyEndDate,
     createdAt: data.created_at,
     updatedAt: data.updated_at
   };
