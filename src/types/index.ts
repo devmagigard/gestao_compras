@@ -120,3 +120,16 @@ export interface PurchaseOrderMetrics {
   delayedDeliveries: number;
   upcomingDeliveries: number;
 }
+
+export interface Quotation {
+  id: string;
+  requisitionId: string;
+  supplierName: string;
+  value: number;
+  deliveryDays: number;
+  paymentConditions: string;
+  notes: string;
+  isWinner: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
