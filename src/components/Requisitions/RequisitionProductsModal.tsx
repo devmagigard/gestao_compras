@@ -219,7 +219,6 @@ export function RequisitionProductsModal({
         supabaseUpdates.status = dataWithRequisition.status;
         supabaseUpdates.observacoes = dataWithRequisition.observacoes || null;
         supabaseUpdates.requisition_id = requisition!.id;
-        supabaseUpdates.warranty_end_date = formatDateForSupabase(dataWithRequisition.warrantyEndDate || '');
 
         const { error } = await supabase
           .from('purchase_order_items')
@@ -262,8 +261,7 @@ export function RequisitionProductsModal({
           data_entrega: formatDateForSupabase(dataWithRequisition.dataEntrega),
           status: dataWithRequisition.status,
           observacoes: dataWithRequisition.observacoes || null,
-          requisition_id: requisition!.id,
-          warranty_end_date: formatDateForSupabase(dataWithRequisition.warrantyEndDate || '')
+          requisition_id: requisition!.id
         };
 
         const { error } = await supabase
