@@ -56,10 +56,9 @@ export function useSupabaseQuotations() {
           is_winner: false,
         })
         .select()
-        .maybeSingle();
+        .single();
 
-      if (err) throw new Error(err.message || err.code || JSON.stringify(err));
-      if (!data) throw new Error('Insercao nao retornou dados. Verifique a conexao e tente novamente.');
+      if (err) throw err;
       const newQuotation = convertFromSupabase(data);
       setQuotations(prev => [...prev, newQuotation]);
       return newQuotation;
@@ -85,10 +84,9 @@ export function useSupabaseQuotations() {
         .update(dbUpdates)
         .eq('id', id)
         .select()
-        .maybeSingle();
+        .single();
 
-      if (err) throw new Error(err.message || err.code || JSON.stringify(err));
-      if (!data) throw new Error('Atualizacao nao retornou dados. Verifique a conexao e tente novamente.');
+      if (err) throw err;
       const updated = convertFromSupabase(data);
       setQuotations(prev => prev.map(q => q.id === id ? updated : q));
       return updated;
@@ -129,9 +127,9 @@ export function useSupabaseQuotations() {
         .update({ is_winner: true })
         .eq('id', winnerId)
         .select()
-        .maybeSingle();
+        .single();
 
-      if (err2) throw new Error(err2.message || err2.code || JSON.stringify(err2));
+      if (err2) throw err2;
 
       const updatedWinner = convertFromSupabase(data);
       setQuotations(prev => prev.map(q => ({
