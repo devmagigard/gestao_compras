@@ -308,12 +308,30 @@ export function useSupabasePurchaseOrders() {
       if (error) throw error;
 
       setItems(prev => prev.filter(item => item.id !== id));
-      
-      // Recarregar com filtros atuais
+
       await loadItems(currentActiveFilters);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao deletar item');
       console.error('Erro ao deletar item:', err);
+    }
+  };
+
+  const deleteMultipleItems = async (ids: string[]) => {
+    try {
+      const { error } = await supabase
+        .from('purchase_order_items')
+        .delete()
+        .in('id', ids);
+
+      if (error) throw error;
+
+      setItems(prev => prev.filter(item => !ids.includes(item.id)));
+
+      await loadItems(currentActiveFilters);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao deletar itens');
+      console.error('Erro ao deletar itens:', err);
+      throw err;
     }
   };
 
@@ -448,6 +466,7 @@ export function useSupabasePurchaseOrders() {
     addItem,
     updateItem,
     deleteItem,
+    deleteMultipleItems,
     bulkImport,
     filterItems,
     getMetrics,

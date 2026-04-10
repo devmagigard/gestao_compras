@@ -75,6 +75,7 @@ function App() {
     addItem: addPurchaseOrderItem,
     updateItem: updatePurchaseOrderItem,
     deleteItem: deletePurchaseOrderItem,
+    deleteMultipleItems: deleteMultiplePurchaseOrderItems,
     bulkImport: bulkImportProducts,
     filterItems: filterPurchaseOrderItems,
     getMetrics: getProductMetrics,
@@ -326,9 +327,11 @@ function App() {
   };
 
   const handleDeleteProduct = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir este produto?')) {
-      deletePurchaseOrderItem(id);
-    }
+    deletePurchaseOrderItem(id);
+  };
+
+  const handleDeleteMultipleProducts = (ids: string[]) => {
+    deleteMultiplePurchaseOrderItems(ids);
   };
 
   const handleImportProducts = () => {
@@ -682,6 +685,7 @@ function App() {
                     upcomingDeliveries={upcomingProductDeliveries}
                     onEdit={handleEditProduct}
                     onDelete={handleDeleteProduct}
+                    onDeleteMultiple={handleDeleteMultipleProducts}
                     onUpdate={(id, field, value) => updatePurchaseOrderItem(id, { [field]: value })}
                     isDarkMode={isDarkMode}
                   />
