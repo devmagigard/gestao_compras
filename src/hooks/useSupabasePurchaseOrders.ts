@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { PurchaseOrderItem, PurchaseOrderFilterState, PurchaseOrderMetrics } from '../types';
-import { createLocalDate, calculateWarrantyEndDate } from '../utils/dateHelpers';
+import { createLocalDate, calculateWarrantyEndDate, isValidDate } from '../utils/dateHelpers';
 
 // Função auxiliar para extrair número do RC/PO e ordenar
 function sortByNumberDescending<T extends { rc?: string; numeroPo?: string }>(
@@ -91,23 +91,30 @@ function convertToSupabase(data: Omit<PurchaseOrderItem, 'id' | 'createdAt' | 'u
     }
   };
 
+  const dataEntregaFormatted = formatDateForSupabase(data.dataEntrega);
+  const dataPoFormatted = formatDateForSupabase(data.dataPo);
+  const startDate = dataEntregaFormatted || dataPoFormatted;
+  const garantia = data.garantia || null;
+  const warrantyEndDate = (startDate && garantia) ? calculateWarrantyEndDate(startDate, garantia) : null;
+
   return {
     numero_po: data.numeroPo,
     ultima_atualizacao: formatDateForSupabase(data.ultimaAtualizacao) || new Date().toISOString().split('T')[0],
-    data_po: formatDateForSupabase(data.dataPo),
+    data_po: dataPoFormatted,
     cod_item: data.codItem || null,
     descricao_item: data.descricaoItem,
     ncm: data.ncm || null,
-    garantia: data.garantia || null,
+    garantia: garantia,
     quantidade: data.quantidade || 0,
     quantidade_entregue: data.quantidadeEntregue || 0,
     valor_unitario: typeof data.valorUnitario === 'number' ? data.valorUnitario : (typeof data.valorUnitario === 'string' && data.valorUnitario !== '' ? parseFloat(data.valorUnitario.replace(',', '.')) || 0 : 0),
     moeda: data.moeda || 'BRL',
     condicoes_pagamento: data.condicoesPagamento || null,
-    data_entrega: formatDateForSupabase(data.dataEntrega),
+    data_entrega: dataEntregaFormatted,
     status: data.status,
     observacoes: data.observacoes || null,
-    requisition_id: data.requisitionId || null
+    requisition_id: data.requisitionId || null,
+    warranty_end_date: warrantyEndDate
   };
 }
 
@@ -274,6 +281,22 @@ export function useSupabasePurchaseOrders() {
       if (updates.status !== undefined) supabaseUpdates.status = updates.status;
       if (updates.observacoes !== undefined) supabaseUpdates.observacoes = updates.observacoes || null;
       if (updates.requisitionId !== undefined) supabaseUpdates.requisition_id = updates.requisitionId || null;
+
+      // Recalculate warranty_end_date if garantia or dates changed
+      if (
+        updates.garantia !== undefined ||
+        updates.dataEntrega !== undefined ||
+        updates.dataPo !== undefined
+      ) {
+        const currentItem = items.find(i => i.id === id);
+        const garantia = updates.garantia !== undefined ? updates.garantia : currentItem?.garantia;
+        const dataEntrega = updates.dataEntrega !== undefined ? updates.dataEntrega : currentItem?.dataEntrega;
+        const dataPo = updates.dataPo !== undefined ? updates.dataPo : currentItem?.dataPo;
+        const startDate = (dataEntrega && isValidDate(dataEntrega)) ? dataEntrega : (dataPo && isValidDate(dataPo)) ? dataPo : null;
+        supabaseUpdates.warranty_end_date = (startDate && garantia && garantia.trim() !== '')
+          ? calculateWarrantyEndDate(startDate, garantia)
+          : null;
+      }
 
       const { data, error } = await supabase
         .from('purchase_order_items')
