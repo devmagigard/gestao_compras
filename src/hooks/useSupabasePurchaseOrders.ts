@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { PurchaseOrderItem, PurchaseOrderFilterState, PurchaseOrderMetrics } from '../types';
-import { createLocalDate, calculateWarrantyEndDate, isValidDate } from '../utils/dateHelpers';
+import { createLocalDate, calculateWarrantyEndDate } from '../utils/dateHelpers';
 
 // Função auxiliar para extrair número do RC/PO e ordenar
 function sortByNumberDescending<T extends { rc?: string; numeroPo?: string }>(
@@ -102,9 +102,7 @@ function convertToSupabase(data: Omit<PurchaseOrderItem, 'id' | 'createdAt' | 'u
 
   const dataEntregaFormatted = formatDateForSupabase(data.dataEntrega);
   const dataPoFormatted = formatDateForSupabase(data.dataPo);
-  const startDate = dataEntregaFormatted || dataPoFormatted;
   const garantia = data.garantia || null;
-  const warrantyEndDate = (startDate && garantia) ? calculateWarrantyEndDate(startDate, garantia) : null;
 
   return {
     numero_po: data.numeroPo,
@@ -122,8 +120,7 @@ function convertToSupabase(data: Omit<PurchaseOrderItem, 'id' | 'createdAt' | 'u
     data_entrega: dataEntregaFormatted,
     status: data.status,
     observacoes: data.observacoes || null,
-    requisition_id: data.requisitionId || null,
-    warranty_end_date: warrantyEndDate
+    requisition_id: data.requisitionId || null
   };
 }
 
@@ -290,22 +287,6 @@ export function useSupabasePurchaseOrders() {
       if (updates.status !== undefined) supabaseUpdates.status = updates.status;
       if (updates.observacoes !== undefined) supabaseUpdates.observacoes = updates.observacoes || null;
       if (updates.requisitionId !== undefined) supabaseUpdates.requisition_id = updates.requisitionId || null;
-
-      // Recalculate warranty_end_date if garantia or dates changed
-      if (
-        updates.garantia !== undefined ||
-        updates.dataEntrega !== undefined ||
-        updates.dataPo !== undefined
-      ) {
-        const currentItem = items.find(i => i.id === id);
-        const garantia = updates.garantia !== undefined ? updates.garantia : currentItem?.garantia;
-        const dataEntrega = updates.dataEntrega !== undefined ? updates.dataEntrega : currentItem?.dataEntrega;
-        const dataPo = updates.dataPo !== undefined ? updates.dataPo : currentItem?.dataPo;
-        const startDate = (dataEntrega && isValidDate(dataEntrega)) ? dataEntrega : (dataPo && isValidDate(dataPo)) ? dataPo : null;
-        supabaseUpdates.warranty_end_date = (startDate && garantia && garantia.trim() !== '')
-          ? calculateWarrantyEndDate(startDate, garantia)
-          : null;
-      }
 
       const { data, error } = await supabase
         .from('purchase_order_items')

@@ -116,19 +116,35 @@ export function PurchaseOrderItemForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validação básica
-    if (!formData.numeroPo.trim()) {
+
+    const parseLocalNumber = (str: string) => {
+      const clean = str.replace(/\./g, '').replace(',', '.');
+      const parsed = parseFloat(clean);
+      return isNaN(parsed) ? 0 : parsed;
+    };
+
+    const quantidade = parseLocalNumber(localQuantidade);
+    const quantidadeEntregue = parseLocalNumber(localQuantidadeEntregue);
+    const valorUnitario = parseLocalNumber(localValorUnitario);
+
+    const finalData = {
+      ...formData,
+      quantidade,
+      quantidadeEntregue,
+      valorUnitario
+    };
+
+    if (!finalData.numeroPo.trim()) {
       alert('Número PO é obrigatório');
       return;
     }
-    
-    if (!formData.descricaoItem.trim()) {
+
+    if (!finalData.descricaoItem.trim()) {
       alert('Descrição do item é obrigatória');
       return;
     }
-    
-    onSave(formData);
+
+    onSave(finalData);
     onClose();
   };
 
