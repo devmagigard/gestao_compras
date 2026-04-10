@@ -37,25 +37,27 @@ export async function importProductsToSupabase(
     try {
       console.log(`Importando produto ${i + 1}/${products.length}: ${product.numeroPo} - ${product.codItem}`);
 
+      const toDate = (val: string | undefined | null) => val && val.trim() !== '' ? val : null;
+
       const { error } = await supabase
         .from('purchase_order_items')
         .insert({
           numero_po: product.numeroPo,
-          ultima_atualizacao: product.ultimaAtualizacao || new Date().toISOString().split('T')[0],
-          data_po: product.dataPo,
+          ultima_atualizacao: toDate(product.ultimaAtualizacao) || new Date().toISOString().split('T')[0],
+          data_po: toDate(product.dataPo),
           cod_item: product.codItem,
           descricao_item: product.descricaoItem,
-          ncm: product.ncm,
-          garantia: product.garantia,
+          ncm: product.ncm || null,
+          garantia: product.garantia || null,
           quantidade: product.quantidade,
           quantidade_entregue: product.quantidadeEntregue,
           valor_unitario: product.valorUnitario,
-          moeda: product.moeda,
-          condicoes_pagamento: product.condicoesPagamento,
-          data_entrega: product.dataEntrega,
+          moeda: product.moeda || 'BRL',
+          condicoes_pagamento: product.condicoesPagamento || null,
+          data_entrega: toDate(product.dataEntrega),
           status: product.status,
-          observacoes: product.observacoes,
-          requisition_id: product.requisitionId || null
+          observacoes: product.observacoes || null,
+          requisition_id: product.requisitionId && product.requisitionId.trim() !== '' ? product.requisitionId : null
         });
 
       if (error) {
