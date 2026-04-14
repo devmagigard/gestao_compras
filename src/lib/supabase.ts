@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL1
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY1
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL1 || import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY1 || import.meta.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
@@ -74,6 +74,44 @@ export type Database = {
           status?: string
           observacoes?: string | null
           requisition_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      quotations: {
+        Row: {
+          id: string
+          requisition_id: string
+          supplier_name: string
+          value: number
+          delivery_days: number
+          payment_conditions: string | null
+          notes: string | null
+          is_winner: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          requisition_id: string
+          supplier_name: string
+          value?: number
+          delivery_days?: number
+          payment_conditions?: string | null
+          notes?: string | null
+          is_winner?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          requisition_id?: string
+          supplier_name?: string
+          value?: number
+          delivery_days?: number
+          payment_conditions?: string | null
+          notes?: string | null
+          is_winner?: boolean
           created_at?: string
           updated_at?: string
         }
