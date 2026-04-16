@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { PurchaseOrderItem, PurchaseOrderFilterState, PurchaseOrderMetrics } from '../types';
 import { createLocalDate, calculateWarrantyEndDate } from '../utils/dateHelpers';
+import { syncPurchaseOrderItemToCatalog } from '../utils/catalogSync';
 
 // Função auxiliar para extrair número do RC/PO e ordenar
 function sortByNumberDescending<T extends { rc?: string; numeroPo?: string }>(
@@ -232,13 +233,23 @@ export function useSupabasePurchaseOrders() {
 
       const newItem = convertFromSupabase(data);
 
-      // Adicionar e reordenar
+      syncPurchaseOrderItemToCatalog({
+        id: newItem.id,
+        descricaoItem: newItem.descricaoItem,
+        codItem: newItem.codItem,
+        ncm: newItem.ncm,
+        valorUnitario: newItem.valorUnitario,
+        moeda: newItem.moeda,
+        dataEntrega: newItem.dataEntrega,
+        dataPo: newItem.dataPo,
+        numeroPo: newItem.numeroPo
+      });
+
       setItems(prev => {
         const updated = [newItem, ...prev];
         return sortByNumberDescending(updated, 'numeroPo');
       });
-      
-      // Recarregar com filtros atuais
+
       await loadItems(currentActiveFilters);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao adicionar item');

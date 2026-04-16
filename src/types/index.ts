@@ -133,3 +133,60 @@ export interface Quotation {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ProductCatalog {
+  id: string;
+  codigo: string;
+  descricao: string;
+  categoria: string;
+  unidadeMedida: string;
+  ncm: string;
+  observacoes: string;
+  createdAt: string;
+  updatedAt: string;
+  suppliers?: ProductSupplier[];
+  priceHistory?: ProductPriceHistory[];
+  lastPrice?: ProductPriceHistory | null;
+  supplierCount?: number;
+}
+
+export interface ProductSupplier {
+  id: string;
+  productCatalogId: string;
+  nomeFornecedor: string;
+  codigoFornecedor: string;
+  ativo: boolean;
+  observacoes: string;
+  createdAt: string;
+  updatedAt: string;
+  lastPrice?: ProductPriceHistory | null;
+}
+
+export interface ProductPriceHistory {
+  id: string;
+  productCatalogId: string;
+  productSupplierId: string | null;
+  valor: number;
+  moeda: string;
+  dataReferencia: string;
+  purchaseOrderItemId: string | null;
+  requisitionId: string | null;
+  fornecedorNome: string;
+  numeroPo: string;
+  origem: 'PO' | 'Cotacao' | 'Manual';
+  observacoes: string;
+  createdAt: string;
+}
+
+export interface CatalogFilterState {
+  descricaoSearch: string;
+  categoriaFilter: string;
+  fornecedorFilter: string;
+}
+
+export interface CatalogMetrics {
+  totalProducts: number;
+  totalSuppliers: number;
+  productsWithHistory: number;
+  avgPrice: number;
+}

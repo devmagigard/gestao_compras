@@ -116,6 +116,120 @@ export type Database = {
           updated_at?: string
         }
       }
+      product_catalog: {
+        Row: {
+          id: string
+          codigo: string
+          descricao: string
+          categoria: string
+          unidade_medida: string
+          ncm: string
+          observacoes: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          codigo?: string
+          descricao: string
+          categoria?: string
+          unidade_medida?: string
+          ncm?: string
+          observacoes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          codigo?: string
+          descricao?: string
+          categoria?: string
+          unidade_medida?: string
+          ncm?: string
+          observacoes?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      product_suppliers: {
+        Row: {
+          id: string
+          product_catalog_id: string
+          nome_fornecedor: string
+          codigo_fornecedor: string
+          ativo: boolean
+          observacoes: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          product_catalog_id: string
+          nome_fornecedor: string
+          codigo_fornecedor?: string
+          ativo?: boolean
+          observacoes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          product_catalog_id?: string
+          nome_fornecedor?: string
+          codigo_fornecedor?: string
+          ativo?: boolean
+          observacoes?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      product_price_history: {
+        Row: {
+          id: string
+          product_catalog_id: string
+          product_supplier_id: string | null
+          valor: number
+          moeda: string
+          data_referencia: string
+          purchase_order_item_id: string | null
+          requisition_id: string | null
+          fornecedor_nome: string
+          numero_po: string
+          origem: string
+          observacoes: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          product_catalog_id: string
+          product_supplier_id?: string | null
+          valor?: number
+          moeda?: string
+          data_referencia?: string
+          purchase_order_item_id?: string | null
+          requisition_id?: string | null
+          fornecedor_nome?: string
+          numero_po?: string
+          origem?: string
+          observacoes?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          product_catalog_id?: string
+          product_supplier_id?: string | null
+          valor?: number
+          moeda?: string
+          data_referencia?: string
+          purchase_order_item_id?: string | null
+          requisition_id?: string | null
+          fornecedor_nome?: string
+          numero_po?: string
+          origem?: string
+          observacoes?: string
+          created_at?: string
+        }
+      }
       requisitions: {
         Row: {
           id: string

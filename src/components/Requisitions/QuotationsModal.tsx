@@ -3,6 +3,7 @@ import { X, Plus, Trophy, Trash2, Save, CreditCard as Edit2, Check, AlertCircle,
 import { Quotation, Requisition } from '../../types';
 import { useSupabaseQuotations } from '../../hooks/useSupabaseQuotations';
 import { formatCurrency } from '../../utils/formatters';
+import { syncQuotationToCatalog } from '../../utils/catalogSync';
 
 interface QuotationsModalProps {
   isOpen: boolean;
@@ -279,13 +280,23 @@ export function QuotationsModal({ isOpen, onClose, requisition }: QuotationsModa
     setSaving(true);
     setSaveError(null);
     try {
-      await addQuotation(requisition!.id, {
+      const newQuotation = await addQuotation(requisition!.id, {
         supplierName: addForm.supplierName.trim(),
         value: parseFloat(addForm.value) || 0,
         deliveryDays: parseInt(addForm.deliveryDays) || 0,
         paymentConditions: addForm.paymentConditions.trim(),
         notes: addForm.notes.trim(),
       });
+      if (newQuotation && requisition?.item) {
+        syncQuotationToCatalog({
+          id: newQuotation.id,
+          requisitionId: requisition.id,
+          itemDescricao: requisition.item,
+          supplierName: newQuotation.supplierName,
+          value: newQuotation.value,
+          createdAt: newQuotation.createdAt
+        });
+      }
       setAddForm(emptyForm);
       setShowAddForm(false);
       setSaveError(null);

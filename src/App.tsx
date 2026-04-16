@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, BookOpen } from 'lucide-react';
+import { CatalogView } from './components/Catalog/CatalogView';
 import { Header } from './components/Layout/Header';
 import { MetricsCards } from './components/Dashboard/MetricsCards';
 import { RecentActivity } from './components/Dashboard/RecentActivity';
@@ -83,7 +84,7 @@ function App() {
     reloadItems: reloadProducts
   } = useSupabasePurchaseOrders();
 
-  const [currentView, setCurrentView] = useState<'dashboard' | 'requisitions' | 'products'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'requisitions' | 'products' | 'catalog'>('dashboard');
   const [formOpen, setFormOpen] = useState(false);
   const [selectedRequisition, setSelectedRequisition] = useState<Requisition | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -572,11 +573,22 @@ function App() {
                 >
                   Produtos ({filteredPurchaseOrderItems.length})
                 </button>
+                <button
+                  onClick={() => setCurrentView('catalog')}
+                  className={`flex items-center gap-1.5 text-sm font-medium border-b-2 pb-3 transition-all duration-200 ${
+                    currentView === 'catalog'
+                      ? 'text-blue-600 border-blue-600'
+                      : `${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} border-transparent hover:border-gray-300`
+                  }`}
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  Catalogo
+                </button>
               </nav>
 
               {/* Search Filters */}
               <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 items-end">
-                {currentView === 'products' ? (
+                {currentView === 'catalog' ? null : currentView === 'products' ? (
                   // Aba Produtos: apenas busca por descrição
                   <div className="relative">
                     <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} transition-colors duration-200`} />
@@ -634,7 +646,7 @@ function App() {
                 )}
                 
                 {/* Botão de Filtros Avançados */}
-                <button
+                {currentView !== 'catalog' && <button
                   onClick={() => {
                     if (currentView === 'products') {
                       setProductFiltersModalOpen(true);
@@ -678,7 +690,7 @@ function App() {
                       </span>
                     ) : null;
                   })()}
-                </button>
+                </button>}
               </div>
             </div>
 
@@ -690,6 +702,8 @@ function App() {
                   <MetricsCards metrics={metrics} isDarkMode={isDarkMode} />
                   <RecentActivity requisitions={filteredRequisitions} isDarkMode={isDarkMode} />
                 </div>
+              ) : currentView === 'catalog' ? (
+                <CatalogView isDarkMode={isDarkMode} />
               ) : currentView === 'requisitions' ? (
                 <RequisitionsTable
                   requisitions={filteredRequisitions}
