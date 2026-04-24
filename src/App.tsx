@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Filter, BookOpen } from 'lucide-react';
+import { Search, Filter, BookOpen, FileInput } from 'lucide-react';
 import { CatalogView } from './components/Catalog/CatalogView';
 import { Header } from './components/Layout/Header';
 import { MetricsCards } from './components/Dashboard/MetricsCards';
@@ -27,6 +27,7 @@ import { parseProductCSVData } from './utils/productCsvParser';
 import { exportProductsToCSV, exportProductsToExcel } from './utils/productExporter';
 import { migrateLocalStorageToSupabase, checkIfMigrationNeeded } from './utils/migrateLocalStorageToSupabase';
 import { supabase } from './lib/supabase';
+import { OmieImportModal } from './components/OmieImport/OmieImportModal';
 
 // Hook para gerenciar tema dark/claro
 function useTheme() {
@@ -84,7 +85,7 @@ function App() {
     reloadItems: reloadProducts
   } = useSupabasePurchaseOrders();
 
-  const [currentView, setCurrentView] = useState<'dashboard' | 'requisitions' | 'products' | 'catalog'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'requisitions' | 'products' | 'catalog' | 'omie'>('dashboard');
   const [formOpen, setFormOpen] = useState(false);
   const [selectedRequisition, setSelectedRequisition] = useState<Requisition | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -137,6 +138,7 @@ function App() {
 
   const [bulkImportModalOpen, setBulkImportModalOpen] = useState(false);
   const [bulkImportProductsModalOpen, setBulkImportProductsModalOpen] = useState(false);
+  const [omieImportModalOpen, setOmieImportModalOpen] = useState(false);
 
   // Verificar se há dados no localStorage que precisam ser migrados
   useEffect(() => {
@@ -584,6 +586,13 @@ function App() {
                   <BookOpen className="h-3.5 w-3.5" />
                   Catalogo
                 </button>
+                <button
+                  onClick={() => setOmieImportModalOpen(true)}
+                  className={`flex items-center gap-1.5 text-sm font-medium border-b-2 pb-3 transition-all duration-200 border-transparent ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} hover:border-gray-300`}
+                >
+                  <FileInput className="h-3.5 w-3.5" />
+                  Importar OMIE
+                </button>
               </nav>
 
               {/* Search Filters */}
@@ -804,6 +813,14 @@ function App() {
         isOpen={bulkImportModalOpen}
         onClose={() => setBulkImportModalOpen(false)}
         onImportComplete={handleBulkImportComplete}
+      />
+
+      {/* OMIE Import Modal */}
+      <OmieImportModal
+        isOpen={omieImportModalOpen}
+        onClose={() => setOmieImportModalOpen(false)}
+        onImportComplete={() => { reloadRequisitions(); reloadProducts(); }}
+        isDarkMode={isDarkMode}
       />
 
       {/* Bulk Import Products Modal */}
